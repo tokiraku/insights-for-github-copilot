@@ -1,0 +1,207 @@
+# タスクリスト: GitHub Copilot Insights 機能
+
+作成日: 2026-04-16
+元要件: docs/requirements/copilot-insights-requirements.md
+技術スタック: TypeScript（CLI） + Copilot スキル（フロントエンド）
+ステータス: In Progress
+
+---
+
+## フェーズ1: 設計・準備
+
+- [ ] [SETUP-001] プロジェクト構造・パッケージ初期化（`package.json`, `tsconfig.json`, `eslint` 設定）
+  - 優先度: Must Have
+  - 関連要件: CON-001
+  - 完了基準: `npm run build` が通る、`npm run lint` がエラーなし
+
+- [ ] [SETUP-002] `.copilot-insights/` ディレクトリの `.gitignore` 追加
+  - 優先度: Must Have
+  - 関連要件: CON-002, NFR-002
+  - 完了基準: `.copilot-insights/` が git 追跡対象外になっている
+
+- [ ] [SETUP-003] `schema_version` を含む session-meta / facets の TypeScript 型定義ファイル作成
+  - 優先度: Must Have
+  - 関連要件: FR-002, FR-003, NFR-004
+  - 完了基準: `SessionMeta` / `Facets` の型が定義され、`schema_version` フィールドを持つ
+
+---
+
+## フェーズ2: CLIツール — データ読み取り基盤（FR-001）
+
+- [ ] [FR-001-01] workspaceId 特定ロジックの実装
+  - 優先度: Must Have
+  - 関連要件: FR-001, CON-002
+  - 完了基準: `state.vscdb` の `terminal.integrated.layoutInfo` を読み取り、現在のワークスペース ID が返る。特定不能な場合は全ワークスペースをスキャンするフォールバックが動く
+  - メモ: `%AppData%\Code\User\workspaceStorage\{id}\state.vscdb` を SQLite で読む（`better-sqlite3` 等）
+
+- [ ] [FR-001-02] chatSessions ディレクトリのスキャン・`.jsonl` ファイル列挙ロジックの実装
+  - 優先度: Must Have
+  - 関連要件: FR-001
+  - 完了基準: 対象ワークスペースの `chatSessions/` 以下の `.jsonl` ファイル一覧が取得できる
+
+- [ ] [FR-001-03] JSONL パーサーの実装
+  - 優先度: Must Have
+  - 関連要件: FR-001, CON-002
+  - 完了基準: `kind=0` からセッション初期化情報を、`kind=2` の最終スナップショットからリクエスト一覧を正しく抽出できる。`message.text` および `response[]` の `value` フィールドを取得できる
+  - メモ: `k=["requests"]` の最後の行が確定データ。`k=["requests", N, "response"]` は差分追記
+
+- [ ] [FR-001-04] 30日フィルタ・最大50セッション上限の適用ロジック実装
+  - 優先度: Must Have
+  - 関連要件: FR-001, CON-005
+  - 完了基準: `creationDate` が30日以内かつ最大50件のセッションのみが返る
+
+- [ ] [FR-001-test] JSONL パーサーのユニットテスト
+  - 優先度: Must Have
+  - 関連要件: FR-001
+  - 完了基準: サンプル `.jsonl` ファイルを使ってセッション情報・メッセージ・レスポンスが正しく解析されることをテストが証明する
+
+---
+
+## フェーズ3: CLIツール — session-meta 抽出（FR-002）
+
+- [ ] [FR-002-01] session-meta 抽出ロジックの実装
+  - 優先度: Must Have
+  - 関連要件: FR-002
+  - 完了基準: パース済みセッションから以下が算出される：`session_id`, `start_time`, `duration_minutes`, `user_message_count`, `tool_counts`, `languages`, `input_tokens`, `output_tokens`, `lines_added`, `lines_removed`, `files_modified`, `tool_errors`, `user_response_times`, `message_hours`
+
+- [ ] [FR-002-02] `.copilot-insights/session-meta/{session_id}.json` への書き出しロジック実装
+  - 優先度: Must Have
+  - 関連要件: FR-002, NFR-004
+  - 完了基準: 出力 JSON に `schema_version` フィールドが含まれる。ディレクトリが存在しない場合は自動生成される
+
+- [ ] [FR-002-test] session-meta 抽出のユニットテスト
+  - 優先度: Must Have
+  - 関連要件: FR-002
+  - 完了基準: 各フィールドの算出値が期待値と一致することをテストが証明する
+
+---
+
+## フェーズ4: CLIツール — facets 生成（FR-003）
+
+- [ ] [FR-003-01] LLM API クライアントの実装（Anthropic Claude）
+  - 優先度: Must Have
+  - 関連要件: FR-003, NFR-003, CON-003
+  - 完了基準: 環境変数 `ANTHROPIC_API_KEY` から読み込み API 呼び出しができる。キーが未設定の場合は明示的なエラーを返す
+  - メモ: `@anthropic-ai/sdk` を使用。プロンプトキャッシュ（NFR-005）を考慮した実装
+
+- [ ] [FR-003-02] facets 生成プロンプトの設計・実装
+  - 優先度: Must Have
+  - 関連要件: FR-003, NFR-002
+  - 完了基準: `project_area`, `primary_goal`, `session_type`, `inferred_satisfaction`, `wins`, `frictions`, `suggested_rules`, `suggested_patterns` を含む JSON を LLM が出力する。生の会話全文を送信しない（要約のみ送信）
+
+- [ ] [FR-003-03] `.copilot-insights/facets/{session_id}.json` への書き出しロジック実装
+  - 優先度: Must Have
+  - 関連要件: FR-003, NFR-004
+  - 完了基準: 出力 JSON に `schema_version` フィールドが含まれる
+
+- [ ] [FR-003-test] facets 生成の統合テスト（LLM モック使用）
+  - 優先度: Must Have
+  - 関連要件: FR-003
+  - 完了基準: モック LLM レスポンスを使い、出力スキーマが `Facets` 型に適合することをテストが証明する
+
+---
+
+## フェーズ5: CLIツール — エントリポイント（NFR-001）
+
+- [ ] [INFRA-001] CLI エントリポイント実装（引数パース）
+  - 優先度: Must Have
+  - 関連要件: NFR-001, NFR-006, FR-008
+  - 完了基準: `--days N`, `--skip-llm`, `--all-workspaces`, `--workspace <path>` オプションが動作する
+
+- [ ] [INFRA-002] パイプライン全体の統合（FR-001 → FR-002 → FR-003 の順次実行）
+  - 優先度: Must Have
+  - 関連要件: FR-001, FR-002, FR-003
+  - 完了基準: `npx copilot-insights` で一連の処理が完了し、`.copilot-insights/` に中間データが出力される
+
+- [ ] [NFR-001-test] パフォーマンス計測スクリプトの作成
+  - 優先度: Must Have
+  - 関連要件: NFR-001
+  - 完了基準: 50セッション分の session-meta 抽出が LLM 呼び出し除いて60秒以内に完了することを確認できる
+
+---
+
+## フェーズ6: Copilot スキル — サマリ返答（FR-004）
+
+- [ ] [FR-004-01] SKILL.md の作成（insightsスキルのエントリポイント定義）
+  - 優先度: Must Have
+  - 関連要件: FR-004, CON-001
+  - 完了基準: Copilot Chat で `@insights` または指定コマンドが認識される
+
+- [ ] [FR-004-02] `.copilot-insights/` の中間データ読み込みロジック実装（スキル内）
+  - 優先度: Must Have
+  - 関連要件: FR-004
+  - 完了基準: session-meta と facets の JSON を読み込み、集計値が正しく返る
+
+- [ ] [FR-004-03] Markdown サマリ生成ロジック実装
+  - 優先度: Must Have
+  - 関連要件: FR-004
+  - 完了基準: 全体統計・利用傾向・Wins・Friction・改善提案の5セクションを含む Markdown が Chat パネルに返答される
+
+- [ ] [FR-004-04] Webview 起動リンクのサマリへの埋め込み
+  - 優先度: Must Have
+  - 関連要件: FR-004, FR-005
+  - 完了基準: サマリ末尾に「詳細レポートを表示」リンクが表示され、クリックで Webview が起動する
+
+---
+
+## フェーズ7: Webview — HTML レポート（FR-005）
+
+- [ ] [FR-005-01] VS Code Webview パネルの実装
+  - 優先度: Must Have
+  - 関連要件: FR-005, CON-001
+  - 完了基準: スキルからのトリガーで Webview パネルが開き、中間データを受け取れる
+
+- [ ] [FR-005-02] HTML レポートテンプレート実装（全セクション）
+  - 優先度: Must Have
+  - 関連要件: FR-005
+  - 完了基準: Stats・What You Work On・Top Tools Used・Languages・Wins・Friction・改善提案の各セクションが表示される
+
+- [ ] [FR-005-03] CSS スタイリング（VS Code テーマカラー変数対応）
+  - 優先度: Must Have
+  - 関連要件: FR-005
+  - 完了基準: ライト/ダークテーマ両方で視認性が確保されている
+
+---
+
+## フェーズ8: Should Have 対応
+
+- [ ] [FR-006-01] `--all-workspaces` モード実装（全ワークスペーススキャン）
+  - 優先度: Should Have
+  - 関連要件: FR-006
+  - 完了基準: `--all-workspaces` 指定時に全ワークスペースの chatSessions を対象に分析が走る
+
+- [ ] [FR-007-01] `suggested_rules` のサマリ内強調表示実装
+  - 優先度: Should Have
+  - 関連要件: FR-007
+  - 完了基準: `copilot-instructions.md` に追記すべきルール候補が専用セクションで表示される
+
+- [ ] [FR-008-01] `--days N` オプション実装
+  - 優先度: Should Have
+  - 関連要件: FR-008
+  - 完了基準: `--days 7` 指定で直近7日のセッションのみが対象になる（FR-001-04 の拡張）
+
+- [ ] [NFR-005-01] Anthropic プロンプトキャッシュの実装・コスト計測
+  - 優先度: Should Have
+  - 関連要件: NFR-005
+  - 完了基準: キャッシュヒット率をログ出力し、50セッション分の facets 生成コストが $1.00 USD 未満であることを確認
+
+- [ ] [NFR-006-01] `--skip-llm` オプション実装
+  - 優先度: Should Have
+  - 関連要件: NFR-006
+  - 完了基準: `--skip-llm` 指定時に LLM API を呼ばず、既存の facets JSON のみでサマリが生成される
+
+---
+
+## 進捗サマリー
+
+| フェーズ | 完了 | 総数 |
+|----------|------|------|
+| フェーズ1: 設計・準備 | 0 | 3 |
+| フェーズ2: データ読み取り基盤 | 0 | 5 |
+| フェーズ3: session-meta 抽出 | 0 | 3 |
+| フェーズ4: facets 生成 | 0 | 4 |
+| フェーズ5: CLI エントリポイント | 0 | 3 |
+| フェーズ6: Copilot スキル | 0 | 4 |
+| フェーズ7: Webview | 0 | 3 |
+| フェーズ8: Should Have 対応 | 0 | 5 |
+| **合計** | **0** | **30** |

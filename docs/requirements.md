@@ -78,7 +78,26 @@ Claude Code の `/insights` コマンド相当の機能を GitHub Copilot 上に
 ### 4.2 データソース
 
 - VS Code のローカルストレージに保存された GitHub Copilot Chat のセッション履歴
-- 対象ディレクトリ：`chatSessions` 内の JSON ファイル
+- ファイルロケーション（ファイル形式は `.jsonl` / JSON Lines 形式、1ファイル = 1セッション）:
+  - ワークスペースあり: `%AppData%\Roaming\Code\User\workspaceStorage\{workspaceId}\chatSessions\{sessionId}.jsonl`
+  - 空ウィンドウ（ワークスペースなし）: 今回の分析対象外
+- ワークスペース ID の特定: `%AppData%\Roaming\Code\User\workspaceStorage\{workspaceId}\state.vscdb`（SQLite）の `terminal.integrated.layoutInfo` キーに `workspaceId` が記録されている。実行中ワークスペースを優先し、特定できない場合は全ワークスペースをスキャンする
+
+### 4.2.1 JSONL スキーマ
+
+各セッションファイルは以下の `kind` 値を持つ行の集合：
+
+| kind | k（パス） | 内容 |
+|---|---|---|
+| 0 | — | セッション初期化（`v.sessionId`, `v.creationDate`, `v.selectedModel` 等） |
+| 1 | 任意 | 入力状態の差分更新（キーストロークごと）。分析対象外 |
+| 2 | `["requests"]` | リクエスト全体のスナップショット（最後の出現が確定データ） |
+| 2 | `["requests", N, "response"]` | レスポンスの差分追記 |
+
+リクエストオブジェクトの主要フィールド:
+- `timestamp`: Unix ミリ秒
+- `message.text`: ユーザーの送信テキスト（UTF-8）
+- `response[]`: AI の応答要素。`kind` 未定義かつ `value` フィールドを持つ要素がマークダウン本文
 
 ### 4.3 中間データの設計仕様
 
