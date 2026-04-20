@@ -14,10 +14,10 @@
   - 関連要件: CON-001
   - 完了基準: `pip install -e .` が通る、`ruff check` がエラーなし
 
-- [ ] [SETUP-002] `.copilot-insights/` ディレクトリの `.gitignore` 追加
+- [x] [SETUP-002] `.copilot-insights/` の git 追跡除外設定
   - 優先度: Must Have
   - 関連要件: CON-002, NFR-002
-  - 完了基準: `.copilot-insights/` が git 追跡対象外になっている
+  - 完了基準: `.copilot-insights/` が git 追跡対象外になっている（ルート `.gitignore` に追加済み）
 
 - [ ] [SETUP-003] `schema_version` を含む session-meta / facets の Python 型定義ファイル作成（`TypedDict` または `dataclass`）
   - 優先度: Must Have
@@ -196,7 +196,7 @@
 
 | フェーズ | 完了 | 総数 |
 |----------|------|------|
-| フェーズ1: 設計・準備 | 1 | 3 |
+| フェーズ1: 設計・準備 | 2 | 3 |
 | フェーズ2: データ読み取り基盤 | 0 | 5 |
 | フェーズ3: session-meta 抽出 | 0 | 3 |
 | フェーズ4: facets 生成 | 0 | 4 |
@@ -204,4 +204,4 @@
 | フェーズ6: Copilot スキル | 0 | 4 |
 | フェーズ7: Webview | 0 | 3 |
 | フェーズ8: Should Have 対応 | 0 | 5 |
-| **合計** | **1** | **30** |
+| **合計** | **2** | **30** |
