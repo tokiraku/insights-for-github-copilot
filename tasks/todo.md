@@ -2,24 +2,24 @@
 
 作成日: 2026-04-16
 元要件: docs/requirements/copilot-insights-requirements.md
-技術スタック: TypeScript（CLI） + Copilot スキル（フロントエンド）
+技術スタック: Python（CLI） + Copilot スキル（フロントエンド）
 ステータス: In Progress
 
 ---
 
 ## フェーズ1: 設計・準備
 
-- [ ] [SETUP-001] プロジェクト構造・パッケージ初期化（`package.json`, `tsconfig.json`, `eslint` 設定）
+- [ ] [SETUP-001] プロジェクト構造・パッケージ初期化（`pyproject.toml`, `ruff` 設定）
   - 優先度: Must Have
   - 関連要件: CON-001
-  - 完了基準: `npm run build` が通る、`npm run lint` がエラーなし
+  - 完了基準: `pip install -e .` が通る、`ruff check` がエラーなし
 
 - [ ] [SETUP-002] `.copilot-insights/` ディレクトリの `.gitignore` 追加
   - 優先度: Must Have
   - 関連要件: CON-002, NFR-002
   - 完了基準: `.copilot-insights/` が git 追跡対象外になっている
 
-- [ ] [SETUP-003] `schema_version` を含む session-meta / facets の TypeScript 型定義ファイル作成
+- [ ] [SETUP-003] `schema_version` を含む session-meta / facets の Python 型定義ファイル作成（`TypedDict` または `dataclass`）
   - 優先度: Must Have
   - 関連要件: FR-002, FR-003, NFR-004
   - 完了基準: `SessionMeta` / `Facets` の型が定義され、`schema_version` フィールドを持つ
@@ -32,7 +32,7 @@
   - 優先度: Must Have
   - 関連要件: FR-001, CON-002
   - 完了基準: `state.vscdb` の `terminal.integrated.layoutInfo` を読み取り、現在のワークスペース ID が返る。特定不能な場合は全ワークスペースをスキャンするフォールバックが動く
-  - メモ: `%AppData%\Code\User\workspaceStorage\{id}\state.vscdb` を SQLite で読む（`better-sqlite3` 等）
+  - メモ: `%AppData%\Code\User\workspaceStorage\{id}\state.vscdb` を SQLite で読む（標準ライブラリ `sqlite3` を使用）
 
 - [ ] [FR-001-02] chatSessions ディレクトリのスキャン・`.jsonl` ファイル列挙ロジックの実装
   - 優先度: Must Have
@@ -82,7 +82,7 @@
   - 優先度: Must Have
   - 関連要件: FR-003, NFR-003, CON-003
   - 完了基準: 環境変数 `ANTHROPIC_API_KEY` から読み込み API 呼び出しができる。キーが未設定の場合は明示的なエラーを返す
-  - メモ: `@anthropic-ai/sdk` を使用。プロンプトキャッシュ（NFR-005）を考慮した実装
+  - メモ: `anthropic` PyPI パッケージを使用。プロンプトキャッシュ（NFR-005）を考慮した実装
 
 - [ ] [FR-003-02] facets 生成プロンプトの設計・実装
   - 優先度: Must Have
@@ -111,7 +111,7 @@
 - [ ] [INFRA-002] パイプライン全体の統合（FR-001 → FR-002 → FR-003 の順次実行）
   - 優先度: Must Have
   - 関連要件: FR-001, FR-002, FR-003
-  - 完了基準: `npx copilot-insights` で一連の処理が完了し、`.copilot-insights/` に中間データが出力される
+  - 完了基準: `python -m copilot_insights` で一連の処理が完了し、`.copilot-insights/` に中間データが出力される
 
 - [ ] [NFR-001-test] パフォーマンス計測スクリプトの作成
   - 優先度: Must Have

@@ -246,11 +246,12 @@ graph LR
 - [x] chatSessions JSONL の内部スキーマ確認済み（kind=0/1/2 の構造、message.text, response[]）
 - [x] ワークスペース ID の特定方法確認済み（state.vscdb の terminal.integrated.layoutInfo キー経由）
 - [x] 空ウィンドウセッションは分析対象外と決定
+- [x] CLIツールの実装言語を Python に決定（TypeScript から変更）
 - [ ] `kind=2` の差分更新を再生して最終状態を得るアルゴリズムの詳細設計（k が深いパスの場合の配列マージ戦略）
 - [ ] `markdownContent` の `value` フィールドが複数に分割されている場合の結合ルール確認
 - [ ] `timeSpentWaiting` の単位確認（ミリ秒？秒？）→ duration_minutes の算出に影響
 - [ ] VS Code 拡張機能として配布するか、CLIツール単体として配布するか（配布方法の最終決定）
-- [ ] LLM API プロバイダーの選定（Anthropic Claude / Azure OpenAI 等）
+- [x] LLM API プロバイダーの選定（Anthropic Claude に決定、`anthropic` PyPI パッケージを使用）
 - [ ] facets 生成のプロンプト設計・出力品質の検証方法
 - [ ] `.copilot-insights/` ディレクトリを `.gitignore` に追加すべきか（個人情報含む可能性）
 - [ ] Copilot Chat エージェントと「スキル」のどちらの実装形態を採用するか
