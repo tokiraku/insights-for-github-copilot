@@ -64,24 +64,33 @@ def _normalize_response_chunks(response: list[Any]) -> list[ResponseChunk]:
         if not isinstance(item, dict):
             continue
         value = item.get("value", "")
-        kind = item.get("kind", "")
+        raw_kind = item.get("kind", "")
+        # Guard against non-string kind values (e.g. null in JSON)
+        kind: str = raw_kind if isinstance(raw_kind, str) else ""
         if isinstance(value, str):
-            chunks.append(ResponseChunk(value=value, kind=kind or ""))
+            chunks.append(ResponseChunk(value=value, kind=kind))
     return chunks
 
 
 def _build_request(raw: dict[str, Any]) -> ParsedRequest:
     """Convert a raw request dict (from a kind=2 snapshot) to ParsedRequest."""
     response_raw: list[Any] = raw.get("response") or []
+    message = raw.get("message")
+    message_text = message.get("text", "") if isinstance(message, dict) else ""
+    raw_wait = raw.get("timeSpentWaiting", 0.0)
+    try:
+        time_spent_waiting = float(raw_wait)
+    except (TypeError, ValueError):
+        time_spent_waiting = 0.0
     return ParsedRequest(
         request_id=raw.get("requestId", ""),
         timestamp=raw.get("timestamp", ""),
         agent=raw.get("agent", ""),
         model_id=raw.get("modelId", ""),
-        message_text=(raw.get("message") or {}).get("text", ""),
+        message_text=message_text,
         response_text=_extract_markdown_text(response_raw),
         response_chunks=_normalize_response_chunks(response_raw),
-        time_spent_waiting=float(raw.get("timeSpentWaiting", 0.0)),
+        time_spent_waiting=time_spent_waiting,
     )
 
 
@@ -124,7 +133,7 @@ def parse_jsonl_file(path: Path) -> ParsedSession | None:
     """
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
-    except OSError:
+    except (OSError, UnicodeDecodeError):
         return None
 
     session_id = ""

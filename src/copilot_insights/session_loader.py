@@ -24,7 +24,7 @@ def _parse_creation_date(iso_str: str) -> datetime | None:
         dt = datetime.fromisoformat(normalized)
         if dt.tzinfo is None:
             dt = dt.replace(tzinfo=timezone.utc)
-        return dt
+        return dt.astimezone(timezone.utc)
     except ValueError:
         return None
 

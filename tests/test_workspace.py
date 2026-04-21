@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from copilot_insights.workspace import (
+    _uri_to_path,
     find_workspace_id,
     get_chat_sessions_dir,
     get_workspace_ids,
@@ -401,3 +402,79 @@ class TestListJsonlFiles:
 
         names = [f.name for f in result]
         assert names == sorted(names)
+
+
+# ---------------------------------------------------------------------------
+# _uri_to_path — file:// URI conversion
+# ---------------------------------------------------------------------------
+
+class TestUriToPath:
+    def test_passthrough_plain_path(self):
+        assert _uri_to_path("/home/user/project") == "/home/user/project"
+
+    def test_passthrough_windows_path(self):
+        assert _uri_to_path("C:\\Users\\test") == "C:\\Users\\test"
+
+    def test_converts_file_uri_unix(self):
+        result = _uri_to_path("file:///home/user/project")
+        assert result == "/home/user/project"
+
+    def test_converts_file_uri_windows(self):
+        result = _uri_to_path("file:///C:/Users/test/myproject")
+        assert result == "C:/Users/test/myproject"
+
+    def test_decodes_percent_encoded_spaces(self):
+        result = _uri_to_path("file:///home/user/my%20project")
+        assert result == "/home/user/my project"
+
+    def test_passthrough_non_file_scheme(self):
+        uri = "https://example.com/repo"
+        assert _uri_to_path(uri) == uri
+
+
+class TestFindWorkspaceIdWithFileUri:
+    def test_finds_workspace_by_file_uri_in_scm_key(self, tmp_path):
+        ws_id = "uri_ws"
+        target_folder = Path("/home/user/myproject")
+
+        workspace_dir = tmp_path / ws_id
+        workspace_dir.mkdir()
+        _make_vscdb(
+            workspace_dir / "state.vscdb",
+            {
+                "scm:view:visibleRepositories": json.dumps(
+                    [{"rootUri": "file:///home/user/myproject"}]
+                )
+            },
+        )
+
+        with patch(
+            "copilot_insights.workspace.get_workspace_storage_root",
+            return_value=tmp_path,
+        ):
+            result = find_workspace_id(target_folder)
+
+        assert result == ws_id
+
+    def test_finds_workspace_by_percent_encoded_uri(self, tmp_path):
+        ws_id = "encoded_ws"
+        target_folder = Path("/home/user/my project")
+
+        workspace_dir = tmp_path / ws_id
+        workspace_dir.mkdir()
+        _make_vscdb(
+            workspace_dir / "state.vscdb",
+            {
+                "scm:view:visibleRepositories": json.dumps(
+                    [{"rootUri": "file:///home/user/my%20project"}]
+                )
+            },
+        )
+
+        with patch(
+            "copilot_insights.workspace.get_workspace_storage_root",
+            return_value=tmp_path,
+        ):
+            result = find_workspace_id(target_folder)
+
+        assert result == ws_id

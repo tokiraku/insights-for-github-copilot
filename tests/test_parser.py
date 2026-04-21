@@ -85,15 +85,32 @@ class TestParseJsonlFileBasic:
     def test_returns_none_for_nonexistent_file(self, tmp_path):
         assert parse_jsonl_file(tmp_path / "missing.jsonl") is None
 
-    def test_returns_none_for_unreadable_file(self, tmp_path):
+    def test_returns_none_for_non_json_content(self, tmp_path):
         path = tmp_path / "bad.jsonl"
-        path.write_bytes(b"\xff\xfe invalid utf8 \x00")
-        # write_text with utf-8 would fail but read_text would raise OSError-like
-        # Simulate by writing content that json cannot parse
         path.write_text("not json at all\n", encoding="utf-8")
         result = parse_jsonl_file(path)
         # No valid kind=0 line → None
         assert result is None
+
+    def test_returns_none_when_read_text_raises_os_error(self, tmp_path, monkeypatch):
+        path = tmp_path / "unreadable.jsonl"
+        path.write_text("placeholder", encoding="utf-8")
+
+        def _raise_os_error(self, *args, **kwargs):
+            raise OSError("permission denied")
+
+        monkeypatch.setattr(Path, "read_text", _raise_os_error)
+        assert parse_jsonl_file(path) is None
+
+    def test_returns_none_when_read_text_raises_unicode_decode_error(self, tmp_path, monkeypatch):
+        path = tmp_path / "binary.jsonl"
+        path.write_text("placeholder", encoding="utf-8")
+
+        def _raise_unicode_error(self, *args, **kwargs):
+            raise UnicodeDecodeError("utf-8", b"", 0, 1, "invalid byte")
+
+        monkeypatch.setattr(Path, "read_text", _raise_unicode_error)
+        assert parse_jsonl_file(path) is None
 
     def test_empty_requests_when_no_snapshot(self, tmp_path):
         path = _write_jsonl(tmp_path, "session.jsonl", [

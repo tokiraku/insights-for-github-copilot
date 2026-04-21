@@ -5,6 +5,7 @@ import json
 import os
 import sqlite3
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 
 
 def get_workspace_storage_root() -> Path:
@@ -67,9 +68,34 @@ def _extract_folder_paths_from_vscdb(db_path: Path) -> list[str]:
     return candidates
 
 
+def _uri_to_path(s: str) -> str:
+    """Convert a file:// URI to a local filesystem path string.
+
+    VS Code stores workspace paths as ``file:///C:/Users/...`` URIs in some
+    state keys.  Passing such a string directly to ``Path()`` produces an
+    incorrect result on Windows.  This helper extracts the path component and
+    percent-decodes it so the caller can safely pass the result to ``Path()``.
+
+    Non-URI strings are returned unchanged.
+    """
+    parsed = urlparse(s)
+    if parsed.scheme == "file":
+        path = unquote(parsed.path)
+        # On Windows the path starts with /C:/...; strip the leading slash.
+        if path.startswith("/") and len(path) > 2 and path[2] == ":":
+            path = path[1:]
+        return path
+    return s
+
+
 def _normalize_path(p: str | Path) -> str:
-    """Return a normalized, lowercased string path for comparison."""
-    return str(Path(p).resolve()).lower()
+    """Return a normalized, lowercased string path for comparison.
+
+    Handles ``file://`` URIs by converting them to local paths before
+    resolving.
+    """
+    s = _uri_to_path(str(p)) if isinstance(p, str) else str(p)
+    return str(Path(s).resolve()).lower()
 
 
 def find_workspace_id(workspace_path: Path | None) -> str | None:
@@ -164,7 +190,8 @@ def resolve_workspace_ids(workspace_path: Path | None) -> list[str]:
 
     When *workspace_path* is provided and a matching ID is found, returns a
     single-element list containing that ID.  Otherwise falls back to all
-    workspace IDs that contain a chatSessions directory.
+    workspace IDs recognized by ``get_workspace_ids()``, including those that
+    contain a ``chatSessions`` directory or at least a ``state.vscdb`` file.
 
     Args:
         workspace_path: Absolute path to the current workspace root, or None.

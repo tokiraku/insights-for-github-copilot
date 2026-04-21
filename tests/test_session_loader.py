@@ -89,7 +89,7 @@ class TestLoadSessionsFiltering:
         assert result == []
 
     def test_includes_session_exactly_at_boundary(self, tmp_path):
-        # Exactly 30 days ago minus 1 second should be included
+        # Approximately 30 days ago minus 86.4 seconds should be included
         date = _iso(_days_ago(29.999))
         _make_jsonl(tmp_path, "edge.jsonl", "edge_session", date)
 
