@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from copilot_insights.models import SCHEMA_VERSION, SessionMeta
@@ -15,7 +15,7 @@ def _parse_timestamp_ms(raw: str | float | int) -> datetime | None:
         return None
     try:
         ms = float(raw)
-        return datetime.fromtimestamp(ms / 1000.0, tz=timezone.utc)
+        return datetime.fromtimestamp(ms / 1000.0, tz=UTC)
     except (TypeError, ValueError):
         pass
     # Fallback: try ISO 8601 string
@@ -24,8 +24,8 @@ def _parse_timestamp_ms(raw: str | float | int) -> datetime | None:
         try:
             dt = datetime.fromisoformat(normalized)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            return dt.astimezone(timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
+            return dt.astimezone(UTC)
         except ValueError:
             pass
     return None

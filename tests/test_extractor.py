@@ -2,15 +2,13 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 
 from copilot_insights.extractor import extract_session_meta
 from copilot_insights.models import SCHEMA_VERSION
 from copilot_insights.parser import ParsedRequest, ParsedSession, ResponseChunk
-from copilot_insights.writer import write_session_meta
-
+from copilot_insights.writer import write_facets, write_session_meta
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -418,3 +416,86 @@ class TestWriteSessionMeta:
 
         data = json.loads((tmp_path / "session-meta" / "ow.json").read_text(encoding="utf-8"))
         assert data["input_tokens"] == meta_v2["input_tokens"]
+
+    def test_path_traversal_chars_are_stripped(self, tmp_path):
+        # "../escape" → sanitized to "escape"; must stay within session-meta/
+        meta = extract_session_meta(_make_session(session_id="../escape"))
+        dest = write_session_meta(tmp_path, meta)
+        assert dest.parent == tmp_path / "session-meta"
+        assert dest.name == "escape.json"
+
+    def test_all_unsafe_chars_in_session_id_raises(self, tmp_path):
+        meta = extract_session_meta(_make_session(session_id="../../"))
+        with pytest.raises(ValueError):
+            write_session_meta(tmp_path, meta)
+
+
+# ---------------------------------------------------------------------------
+# write_facets — file output and schema_version
+# ---------------------------------------------------------------------------
+
+class TestWriteFacets:
+    def _make_facets(self, session_id: str = "f-001") -> dict:
+        from copilot_insights.models import SCHEMA_VERSION
+        return {
+            "schema_version": SCHEMA_VERSION,
+            "session_id": session_id,
+            "project_area": "test",
+            "primary_goal": "testing",
+            "session_type": "Single Task",
+            "inferred_satisfaction": "Likely Satisfied",
+            "wins": [],
+            "frictions": [],
+            "suggested_rules": [],
+            "suggested_patterns": [],
+        }
+
+    def test_creates_output_directory_if_missing(self, tmp_path):
+        facets = self._make_facets()
+        dest = write_facets(tmp_path / "new_dir", facets)
+        assert dest.exists()
+
+    def test_file_is_in_facets_subdir(self, tmp_path):
+        facets = self._make_facets(session_id="sid")
+        dest = write_facets(tmp_path, facets)
+        assert dest.parent.name == "facets"
+
+    def test_filename_is_session_id_dot_json(self, tmp_path):
+        facets = self._make_facets(session_id="my-facet")
+        dest = write_facets(tmp_path, facets)
+        assert dest.name == "my-facet.json"
+
+    def test_output_contains_schema_version(self, tmp_path):
+        facets = self._make_facets(session_id="v-test")
+        write_facets(tmp_path, facets)
+        data = json.loads((tmp_path / "facets" / "v-test.json").read_text(encoding="utf-8"))
+        assert data["schema_version"] == SCHEMA_VERSION
+
+    def test_output_json_is_valid_and_complete(self, tmp_path):
+        facets = self._make_facets(session_id="full")
+        write_facets(tmp_path, facets)
+        data = json.loads((tmp_path / "facets" / "full.json").read_text(encoding="utf-8"))
+        required_keys = {
+            "schema_version", "session_id", "project_area", "primary_goal",
+            "session_type", "inferred_satisfaction", "wins", "frictions",
+            "suggested_rules", "suggested_patterns",
+        }
+        assert required_keys.issubset(data.keys())
+
+    def test_overwrites_existing_file(self, tmp_path):
+        facets_v1 = self._make_facets(session_id="ow")
+        write_facets(tmp_path, facets_v1)
+
+        facets_v2 = self._make_facets(session_id="ow")
+        facets_v2["primary_goal"] = "updated goal"
+        write_facets(tmp_path, facets_v2)
+
+        data = json.loads((tmp_path / "facets" / "ow.json").read_text(encoding="utf-8"))
+        assert data["primary_goal"] == "updated goal"
+
+    def test_path_traversal_chars_are_stripped(self, tmp_path):
+        # "../escape" → sanitized to "escape"; must stay within facets/
+        facets = self._make_facets(session_id="../escape")
+        dest = write_facets(tmp_path, facets)
+        assert dest.parent == tmp_path / "facets"
+        assert dest.name == "escape.json"
