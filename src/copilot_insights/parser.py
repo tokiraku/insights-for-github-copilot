@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -39,6 +40,21 @@ class ParsedSession(TypedDict):
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+def _normalize_creation_date(raw: Any) -> str:
+    """Normalize a creationDate value to an ISO 8601 string.
+
+    VS Code may store creationDate as either an ISO 8601 string or a Unix
+    timestamp in milliseconds (int/float).  Always returns a string so that
+    downstream consumers (SessionMeta.start_time, etc.) receive a consistent type.
+    """
+    if isinstance(raw, (int, float)) and (raw or raw == 0):
+        try:
+            return datetime.fromtimestamp(raw / 1000.0, tz=UTC).isoformat()
+        except (OSError, OverflowError, ValueError):
+            return str(raw)
+    return str(raw) if raw is not None else ""
+
 
 def _extract_markdown_text(response: list[Any]) -> str:
     """Concatenate all markdown answer chunks from a response array.
@@ -160,7 +176,7 @@ def parse_jsonl_file(path: Path) -> ParsedSession | None:
         if kind == 0:
             v = record.get("v") or {}
             session_id = v.get("sessionId", "")
-            creation_date = v.get("creationDate", "")
+            creation_date = _normalize_creation_date(v.get("creationDate", ""))
             selected_model = v.get("selectedModel", "")
             found_init = True
 

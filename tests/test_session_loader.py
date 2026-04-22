@@ -62,6 +62,26 @@ class TestParseCreationDate:
         assert result is not None
         assert result.tzinfo == UTC
 
+    def test_parses_int_unix_ms(self):
+        # 1700000000000 ms = 2023-11-14T22:13:20Z
+        result = _parse_creation_date(1700000000000)
+        assert result is not None
+        assert result.tzinfo is not None
+        assert result.year == 2023
+
+    def test_parses_float_unix_ms(self):
+        result = _parse_creation_date(1700000000000.0)
+        assert result is not None
+        assert result.tzinfo is not None
+
+    def test_returns_none_for_zero_int(self):
+        # 0 ms is Unix epoch — valid but extremely old; _parse_creation_date returns a datetime
+        result = _parse_creation_date(0)
+        assert result is not None  # epoch is parseable
+
+    def test_returns_none_for_none_value(self):
+        assert _parse_creation_date("") is None
+
 
 # ---------------------------------------------------------------------------
 # load_sessions — filtering
@@ -229,3 +249,54 @@ class TestLoadSessionsWorkspaceIds:
             result = load_sessions(["any_id"])
 
         assert result == []
+
+
+# ---------------------------------------------------------------------------
+# load_sessions — int/float creationDate support
+# ---------------------------------------------------------------------------
+
+class TestLoadSessionsIntDate:
+    def _make_jsonl_int_date(self, tmp_path: Path, name: str, session_id: str, creation_ms: int) -> Path:
+        """Write a JSONL file with a numeric (Unix ms) creationDate."""
+        import json as _json
+        p = tmp_path / name
+        lines = [
+            _json.dumps({"kind": 0, "v": {
+                "sessionId": session_id, "creationDate": creation_ms, "selectedModel": "gpt-4o",
+            }}),
+            _json.dumps({"kind": 2, "k": ["requests"], "v": []}),
+        ]
+        p.write_text("\n".join(lines), encoding="utf-8")
+        return p
+
+    def test_includes_session_with_recent_int_date(self, tmp_path):
+        # 1 day ago in ms
+        recent_ms = int((_days_ago(1)).timestamp() * 1000)
+        p = self._make_jsonl_int_date(tmp_path, "int_date.jsonl", "sess-int", recent_ms)
+
+        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+            result = load_sessions([], days=30)
+
+        assert len(result) == 1
+        assert result[0]["session_id"] == "sess-int"
+
+    def test_excludes_session_with_old_int_date(self, tmp_path):
+        # 60 days ago in ms
+        old_ms = int((_days_ago(60)).timestamp() * 1000)
+        p = self._make_jsonl_int_date(tmp_path, "old_int.jsonl", "sess-old-int", old_ms)
+
+        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+            result = load_sessions([], days=30)
+
+        assert result == []
+
+    def test_creation_date_normalized_to_iso_string(self, tmp_path):
+        recent_ms = int((_days_ago(1)).timestamp() * 1000)
+        p = self._make_jsonl_int_date(tmp_path, "norm.jsonl", "sess-norm", recent_ms)
+
+        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+            result = load_sessions([], days=30)
+
+        # creation_date must be a string (ISO 8601) after normalization in parser
+        assert isinstance(result[0]["creation_date"], str)
+        assert "T" in result[0]["creation_date"]
