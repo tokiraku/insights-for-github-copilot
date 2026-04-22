@@ -4,6 +4,7 @@ import * as vscode from "vscode";
 
 import { InsightsNotFoundError, loadInsights } from "./dataLoader.js";
 import { buildSummary } from "./markdownSummary.js";
+import { ReportPanel } from "./reportPanel.js";
 
 const PARTICIPANT_ID = "copilot-insights.insights";
 
@@ -17,10 +18,14 @@ export function activate(context: vscode.ExtensionContext): void {
   const openReportCmd = vscode.commands.registerCommand(
     "copilot-insights.openReport",
     () => {
-      // Implemented in phase 7 (FR-005).
-      vscode.window.showInformationMessage(
-        "Copilot Insights: Full report coming soon.",
-      );
+      const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (!workspaceRoot) {
+        vscode.window.showErrorMessage(
+          "Copilot Insights: No workspace is open.",
+        );
+        return;
+      }
+      ReportPanel.show(context, workspaceRoot);
     },
   );
   context.subscriptions.push(openReportCmd);
