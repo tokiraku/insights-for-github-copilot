@@ -76,11 +76,11 @@ def test_summary_contains_response_text() -> None:
 
 
 def test_summary_contains_message_count() -> None:
-    """要約にメッセージ数が含まれる。"""
+    """要約に "Messages: 3" という行が含まれる。"""
     requests = [_make_request(request_id=f"r{i}") for i in range(3)]
     session = _make_session(requests=requests)
     summary = summarize_session(session)
-    assert "3" in summary
+    assert any(line == "Messages: 3" for line in summary.splitlines())
 
 
 # ---------------------------------------------------------------------------

@@ -11,6 +11,9 @@ from copilot_insights.models import SCHEMA_VERSION, Facets, SessionMeta
 from copilot_insights.parser import ParsedSession
 from copilot_insights.summarizer import summarize_session
 
+# Default model. Can be overridden by passing `model=` to AnthropicClient.
+DEFAULT_MODEL = "claude-haiku-4-5-20251001"
+
 # System prompt is defined once and eligible for prompt caching (NFR-005).
 _SYSTEM_PROMPT = """You are an expert analyst specializing in developer productivity and AI assistant usage patterns.
 Your task is to analyze a GitHub Copilot chat session and produce a structured qualitative assessment.
@@ -23,8 +26,8 @@ Return ONLY valid JSON matching this exact schema:
 {
   "project_area": "<short phrase: e.g. 'backend API', 'frontend UI', 'infrastructure', 'testing'>",
   "primary_goal": "<one sentence describing the main objective of the session>",
-  "session_type": "<one of: 'feature_development', 'bug_fixing', 'refactoring', 'exploration',\
- 'documentation', 'testing', 'configuration'>",
+  "session_type": "<one of: 'feature_development', 'bug_fixing', 'refactoring',
+  'exploration', 'documentation', 'testing', 'configuration'>",
   "inferred_satisfaction": "<one of: 'high', 'medium', 'low'>",
   "wins": ["<concrete achievement 1>", "<concrete achievement 2>"],
   "frictions": ["<obstacle or frustration 1>", "<obstacle or frustration 2>"],
@@ -51,7 +54,7 @@ class AnthropicClient:
     reduce API costs when processing multiple sessions (NFR-005).
     """
 
-    def __init__(self, model: str = "claude-haiku-4-5-20251001") -> None:
+    def __init__(self, model: str = DEFAULT_MODEL) -> None:
         """Initialize the client, reading the API key from the environment.
 
         Args:
@@ -199,6 +202,21 @@ def _parse_facets(raw_text: str, session_id: str) -> Facets:
         raise FacetsGenerationError(
             f"LLM response missing required keys for session '{session_id}': {missing}"
         )
+
+    list_fields = ("wins", "frictions", "suggested_rules", "suggested_patterns")
+    for field in list_fields:
+        value = data[field]
+        if not isinstance(value, list):
+            raise FacetsGenerationError(
+                f"LLM response field '{field}' must be a list for session '{session_id}', "
+                f"got {type(value).__name__}"
+            )
+        for i, item in enumerate(value):
+            if not isinstance(item, str):
+                raise FacetsGenerationError(
+                    f"LLM response field '{field}[{i}]' must be a string for session '{session_id}', "
+                    f"got {type(item).__name__}"
+                )
 
     return Facets(
         schema_version=SCHEMA_VERSION,

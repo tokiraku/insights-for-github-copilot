@@ -56,7 +56,15 @@ def summarize_session(session: ParsedSession) -> str:
 
 
 def _truncate(text: str, max_chars: int) -> str:
-    """Return *text* truncated to *max_chars* with an ellipsis if cut."""
+    """Return *text* truncated to at most *max_chars* characters.
+
+    If truncation is required, the returned value includes an ellipsis and
+    still fits within ``max_chars`` total characters.
+    """
+    if max_chars <= 0:
+        return ""
     if len(text) <= max_chars:
         return text
-    return text[:max_chars] + "…"
+    if max_chars == 1:
+        return "…"
+    return text[: max_chars - 1] + "…"
