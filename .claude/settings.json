@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/redcr/.claude/**)",
+      "WebSearch"
+    ]
+  },
+  "enabledMcpjsonServers": ["github"]
+}

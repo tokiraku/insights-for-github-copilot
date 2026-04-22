@@ -78,23 +78,23 @@
 
 ## フェーズ4: CLIツール — facets 生成（FR-003）
 
-- [ ] [FR-003-01] LLM API クライアントの実装（Anthropic Claude）
+- [x] [FR-003-01] LLM API クライアントの実装（Anthropic Claude）
   - 優先度: Must Have
   - 関連要件: FR-003, NFR-003, CON-003
   - 完了基準: 環境変数 `ANTHROPIC_API_KEY` から読み込み API 呼び出しができる。キーが未設定の場合は明示的なエラーを返す
   - メモ: `anthropic` PyPI パッケージを使用。プロンプトキャッシュ（NFR-005）を考慮した実装
 
-- [ ] [FR-003-02] facets 生成プロンプトの設計・実装
+- [x] [FR-003-02] facets 生成プロンプトの設計・実装
   - 優先度: Must Have
   - 関連要件: FR-003, NFR-002
   - 完了基準: `project_area`, `primary_goal`, `session_type`, `inferred_satisfaction`, `wins`, `frictions`, `suggested_rules`, `suggested_patterns` を含む JSON を LLM が出力する。生の会話全文を送信しない（要約のみ送信）
 
-- [ ] [FR-003-03] `.copilot-insights/facets/{session_id}.json` への書き出しロジック実装
+- [x] [FR-003-03] `.copilot-insights/facets/{session_id}.json` への書き出しロジック実装
   - 優先度: Must Have
   - 関連要件: FR-003, NFR-004
   - 完了基準: 出力 JSON に `schema_version` フィールドが含まれる
 
-- [ ] [FR-003-test] facets 生成の統合テスト（LLM モック使用）
+- [x] [FR-003-test] facets 生成の統合テスト（LLM モック使用）
   - 優先度: Must Have
   - 関連要件: FR-003
   - 完了基準: モック LLM レスポンスを使い、出力スキーマが `Facets` 型に適合することをテストが証明する
@@ -199,9 +199,9 @@
 | フェーズ1: 設計・準備 | 3 | 3 |
 | フェーズ2: データ読み取り基盤 | 5 | 5 |
 | フェーズ3: session-meta 抽出 | 3 | 3 |
-| フェーズ4: facets 生成 | 0 | 4 |
+| フェーズ4: facets 生成 | 4 | 4 |
 | フェーズ5: CLI エントリポイント | 0 | 3 |
 | フェーズ6: Copilot スキル | 0 | 4 |
 | フェーズ7: Webview | 0 | 3 |
 | フェーズ8: Should Have 対応 | 0 | 5 |
-| **合計** | **11** | **30** |
+| **合計** | **15** | **30** |
