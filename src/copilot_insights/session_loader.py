@@ -11,15 +11,23 @@ DEFAULT_DAYS = 30
 DEFAULT_MAX_SESSIONS = 50
 
 
-def _parse_creation_date(iso_str: str) -> datetime | None:
-    """Parse an ISO 8601 creation_date string into an aware UTC datetime.
+def _parse_creation_date(raw: str | int | float) -> datetime | None:
+    """Parse a creation_date value into an aware UTC datetime.
 
-    Returns None if the string cannot be parsed.
+    Accepts either an ISO 8601 string or a Unix timestamp in milliseconds
+    (int or float), as VS Code stores both formats in practice.
+    Returns None if the value cannot be parsed.
     """
-    if not iso_str:
+    if not raw and raw != 0:
         return None
-    # Remove trailing 'Z' and add explicit UTC offset for fromisoformat
-    normalized = iso_str.replace("Z", "+00:00")
+    # Numeric: treat as Unix milliseconds
+    if isinstance(raw, (int, float)):
+        try:
+            return datetime.fromtimestamp(raw / 1000.0, tz=UTC)
+        except (OSError, OverflowError, ValueError):
+            return None
+    # String: ISO 8601
+    normalized = raw.replace("Z", "+00:00")
     try:
         dt = datetime.fromisoformat(normalized)
         if dt.tzinfo is None:

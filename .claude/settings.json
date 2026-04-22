@@ -2,8 +2,21 @@
   "permissions": {
     "allow": [
       "Read(.claude/**)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(python -m copilot_insights --skip-llm)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(python -m copilot_insights --days 7 --skip-llm)",
+      "Bash(python -m copilot_insights --all-workspaces --skip-llm)",
+      "Bash(python -m copilot_insights --workspace . --skip-llm)",
+      "Bash(python -m copilot_insights --all-workspaces --workspace .)",
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(python -m pytest tests/test_pipeline.py -v)",
+      "Bash(python -m pytest tests/ -q)",
+      "Bash(python -m copilot_insights --skip-llm --days 7)",
+      "Bash(python -m pytest tests/test_performance.py -v -s)"
     ]
   },
-  "enabledMcpjsonServers": ["github"]
+  "enabledMcpjsonServers": [
+    "github"
+  ]
 }

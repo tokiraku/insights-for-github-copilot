@@ -38,3 +38,6 @@ known-first-party = ["copilot_insights"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "performance: marks tests as performance benchmarks (run with -m performance)",
+]
