@@ -29,6 +29,11 @@ htmlcov/
 # VS Code
 .vscode/
 
+# VS Code extension build output
+extension/out/
+extension/node_modules/
+extension/*.vsix
+
 # MCP
 .mcp*
 

@@ -122,22 +122,22 @@
 
 ## フェーズ6: Copilot スキル — サマリ返答（FR-004）
 
-- [ ] [FR-004-01] SKILL.md の作成（insightsスキルのエントリポイント定義）
+- [x] [FR-004-01] SKILL.md の作成（insightsスキルのエントリポイント定義）
   - 優先度: Must Have
   - 関連要件: FR-004, CON-001
   - 完了基準: Copilot Chat で `@insights` または指定コマンドが認識される
 
-- [ ] [FR-004-02] `.copilot-insights/` の中間データ読み込みロジック実装（スキル内）
+- [x] [FR-004-02] `.copilot-insights/` の中間データ読み込みロジック実装（スキル内）
   - 優先度: Must Have
   - 関連要件: FR-004
   - 完了基準: session-meta と facets の JSON を読み込み、集計値が正しく返る
 
-- [ ] [FR-004-03] Markdown サマリ生成ロジック実装
+- [x] [FR-004-03] Markdown サマリ生成ロジック実装
   - 優先度: Must Have
   - 関連要件: FR-004
   - 完了基準: 全体統計・利用傾向・Wins・Friction・改善提案の5セクションを含む Markdown が Chat パネルに返答される
 
-- [ ] [FR-004-04] Webview 起動リンクのサマリへの埋め込み
+- [x] [FR-004-04] Webview 起動リンクのサマリへの埋め込み
   - 優先度: Must Have
   - 関連要件: FR-004, FR-005
   - 完了基準: サマリ末尾に「詳細レポートを表示」リンクが表示され、クリックで Webview が起動する
@@ -201,7 +201,7 @@
 | フェーズ3: session-meta 抽出 | 3 | 3 |
 | フェーズ4: facets 生成 | 4 | 4 |
 | フェーズ5: CLI エントリポイント | 3 | 3 |
-| フェーズ6: Copilot スキル | 0 | 4 |
+| フェーズ6: Copilot スキル | 4 | 4 |
 | フェーズ7: Webview | 0 | 3 |
 | フェーズ8: Should Have 対応 | 0 | 5 |
-| **合計** | **18** | **30** |
+| **合計** | **22** | **30** |
