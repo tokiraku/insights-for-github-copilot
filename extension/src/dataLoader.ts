@@ -62,7 +62,7 @@ function readJsonFiles<T>(dir: string): T[] {
   }
 
   const results: T[] = [];
-  for (const entry of fs.readdirSync(dir)) {
+  for (const entry of fs.readdirSync(dir).sort()) {
     if (!entry.endsWith(".json")) {
       continue;
     }

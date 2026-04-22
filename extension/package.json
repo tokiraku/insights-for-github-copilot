@@ -7,7 +7,6 @@
     "vscode": "^1.90.0"
   },
   "categories": ["AI"],
-  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "chatParticipants": [
@@ -20,7 +19,7 @@
         "commands": [
           {
             "name": "summary",
-            "description": "Show a Markdown summary of your Copilot usage (last 30 days)"
+            "description": "Show a Markdown summary of your Copilot usage"
           },
           {
             "name": "report",
@@ -39,8 +38,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "lint": "eslint src --ext ts"
+    "watch": "tsc --watch -p ./"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

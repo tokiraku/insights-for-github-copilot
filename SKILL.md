@@ -26,9 +26,8 @@ your machine (NFR-002).
 
 Returns a Markdown report with:
 - **Stats**: total sessions, messages, tokens, lines changed
-- **What You Work On**: top project areas and goals
+- **What You Work On**: top project areas
 - **Top Tools Used**: tool invocation breakdown
-- **Languages**: detected programming languages
 - **Wins**: recurring positive patterns from LLM analysis
 - **Friction**: recurring blockers or inefficiencies
 - **Suggested Rules**: recommended additions to `copilot-instructions.md`

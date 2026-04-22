@@ -12,12 +12,6 @@ export function activate(context: vscode.ExtensionContext): void {
     PARTICIPANT_ID,
     handleChatRequest,
   );
-  participant.iconPath = vscode.Uri.joinPath(
-    context.extensionUri,
-    "assets",
-    "icon.png",
-  );
-
   context.subscriptions.push(participant);
 
   const openReportCmd = vscode.commands.registerCommand(
@@ -53,14 +47,21 @@ async function handleChatRequest(
     return {};
   }
 
-  const command = request.command ?? "summary";
+  const command = request.command;
 
   if (command === "report") {
     await vscode.commands.executeCommand("copilot-insights.openReport");
     return {};
   }
 
-  // Default: /summary
+  if (command !== undefined && command !== "summary") {
+    stream.markdown(
+      `Unknown command: \`/${command}\`. Available commands: \`/summary\`, \`/report\`.`,
+    );
+    return {};
+  }
+
+  // Default: /summary (when no command is given) or explicit /summary
   const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
   if (!workspaceRoot) {
     stream.markdown(
