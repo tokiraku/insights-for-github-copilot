@@ -1,0 +1,48 @@
+{
+  "name": "insights-for-github-copilot",
+  "displayName": "Insights for GitHub Copilot",
+  "description": "Analyze your GitHub Copilot Chat sessions and surface usage insights directly in VS Code.",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": ["AI"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "chatParticipants": [
+      {
+        "id": "copilot-insights.insights",
+        "name": "insights",
+        "fullName": "Copilot Insights",
+        "description": "Analyze your GitHub Copilot Chat session history and show usage insights.",
+        "isSticky": false,
+        "commands": [
+          {
+            "name": "summary",
+            "description": "Show a Markdown summary of your Copilot usage"
+          },
+          {
+            "name": "report",
+            "description": "Open the full HTML report in a Webview panel"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "copilot-insights.openReport",
+        "title": "Copilot Insights: Open Full Report"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc --watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.4.0"
+  }
+}
