@@ -1,7 +1,7 @@
 # Session loading, filtering, and limiting logic for Copilot Chat JSONL files.
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from copilot_insights.parser import ParsedSession, parse_jsonl_file
@@ -23,8 +23,8 @@ def _parse_creation_date(iso_str: str) -> datetime | None:
     try:
         dt = datetime.fromisoformat(normalized)
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
+            dt = dt.replace(tzinfo=UTC)
+        return dt.astimezone(UTC)
     except ValueError:
         return None
 
@@ -55,7 +55,7 @@ def load_sessions(
         List of :class:`~copilot_insights.parser.ParsedSession` objects,
         newest-first, capped at *max_sessions*.
     """
-    cutoff = datetime.now(tz=timezone.utc) - timedelta(days=days)
+    cutoff = datetime.now(tz=UTC) - timedelta(days=days)
     jsonl_files: list[Path] = list_jsonl_files(workspace_ids)
 
     sessions: list[tuple[datetime, ParsedSession]] = []

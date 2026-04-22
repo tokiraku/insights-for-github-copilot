@@ -59,17 +59,17 @@
 
 ## フェーズ3: CLIツール — session-meta 抽出（FR-002）
 
-- [ ] [FR-002-01] session-meta 抽出ロジックの実装
+- [x] [FR-002-01] session-meta 抽出ロジックの実装
   - 優先度: Must Have
   - 関連要件: FR-002
   - 完了基準: パース済みセッションから以下が算出される：`session_id`, `start_time`, `duration_minutes`, `user_message_count`, `tool_counts`, `languages`, `input_tokens`, `output_tokens`, `lines_added`, `lines_removed`, `files_modified`, `tool_errors`, `user_response_times`, `message_hours`
 
-- [ ] [FR-002-02] `.copilot-insights/session-meta/{session_id}.json` への書き出しロジック実装
+- [x] [FR-002-02] `.copilot-insights/session-meta/{session_id}.json` への書き出しロジック実装
   - 優先度: Must Have
   - 関連要件: FR-002, NFR-004
   - 完了基準: 出力 JSON に `schema_version` フィールドが含まれる。ディレクトリが存在しない場合は自動生成される
 
-- [ ] [FR-002-test] session-meta 抽出のユニットテスト
+- [x] [FR-002-test] session-meta 抽出のユニットテスト
   - 優先度: Must Have
   - 関連要件: FR-002
   - 完了基準: 各フィールドの算出値が期待値と一致することをテストが証明する
@@ -198,10 +198,10 @@
 |----------|------|------|
 | フェーズ1: 設計・準備 | 3 | 3 |
 | フェーズ2: データ読み取り基盤 | 5 | 5 |
-| フェーズ3: session-meta 抽出 | 0 | 3 |
+| フェーズ3: session-meta 抽出 | 3 | 3 |
 | フェーズ4: facets 生成 | 0 | 4 |
 | フェーズ5: CLI エントリポイント | 0 | 3 |
 | フェーズ6: Copilot スキル | 0 | 4 |
 | フェーズ7: Webview | 0 | 3 |
 | フェーズ8: Should Have 対応 | 0 | 5 |
-| **合計** | **8** | **30** |
+| **合計** | **11** | **30** |

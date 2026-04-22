@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import patch
-
-import pytest
 
 from copilot_insights.session_loader import (
     DEFAULT_DAYS,
@@ -14,7 +12,6 @@ from copilot_insights.session_loader import (
     _parse_creation_date,
     load_sessions,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -25,13 +22,15 @@ def _iso(dt: datetime) -> str:
 
 
 def _days_ago(n: float) -> datetime:
-    return datetime.now(tz=timezone.utc) - timedelta(days=n)
+    return datetime.now(tz=UTC) - timedelta(days=n)
 
 
 def _make_jsonl(tmp_path: Path, name: str, session_id: str, creation_date: str) -> Path:
     p = tmp_path / name
     lines = [
-        json.dumps({"kind": 0, "v": {"sessionId": session_id, "creationDate": creation_date, "selectedModel": "gpt-4o"}}),
+        json.dumps({"kind": 0, "v": {
+            "sessionId": session_id, "creationDate": creation_date, "selectedModel": "gpt-4o",
+        }}),
         json.dumps({"kind": 2, "k": ["requests"], "v": []}),
     ]
     p.write_text("\n".join(lines), encoding="utf-8")
@@ -61,7 +60,7 @@ class TestParseCreationDate:
     def test_naive_datetime_gets_utc(self):
         result = _parse_creation_date("2026-04-01T10:00:00")
         assert result is not None
-        assert result.tzinfo == timezone.utc
+        assert result.tzinfo == UTC
 
 
 # ---------------------------------------------------------------------------

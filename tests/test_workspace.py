@@ -4,9 +4,7 @@ from __future__ import annotations
 import json
 import sqlite3
 from pathlib import Path
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 from copilot_insights.workspace import (
     _uri_to_path,
@@ -17,7 +15,6 @@ from copilot_insights.workspace import (
     list_jsonl_files,
     resolve_workspace_ids,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -31,3 +31,6 @@ htmlcov/
 
 # MCP
 .mcp*
+
+# local settings
+.claude/settings.local.json

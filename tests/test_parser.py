@@ -4,10 +4,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import pytest
-
-from copilot_insights.parser import ParsedSession, parse_jsonl_file
-
+from copilot_insights.parser import parse_jsonl_file
 
 # ---------------------------------------------------------------------------
 # Helpers
