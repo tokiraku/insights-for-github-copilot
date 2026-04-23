@@ -146,17 +146,17 @@
 
 ## フェーズ7: Webview — HTML レポート（FR-005）
 
-- [ ] [FR-005-01] VS Code Webview パネルの実装
+- [x] [FR-005-01] VS Code Webview パネルの実装
   - 優先度: Must Have
   - 関連要件: FR-005, CON-001
   - 完了基準: スキルからのトリガーで Webview パネルが開き、中間データを受け取れる
 
-- [ ] [FR-005-02] HTML レポートテンプレート実装（全セクション）
+- [x] [FR-005-02] HTML レポートテンプレート実装（全セクション）
   - 優先度: Must Have
   - 関連要件: FR-005
   - 完了基準: Stats・What You Work On・Top Tools Used・Languages・Wins・Friction・改善提案の各セクションが表示される
 
-- [ ] [FR-005-03] CSS スタイリング（VS Code テーマカラー変数対応）
+- [x] [FR-005-03] CSS スタイリング（VS Code テーマカラー変数対応）
   - 優先度: Must Have
   - 関連要件: FR-005
   - 完了基準: ライト/ダークテーマ両方で視認性が確保されている
@@ -202,6 +202,6 @@
 | フェーズ4: facets 生成 | 4 | 4 |
 | フェーズ5: CLI エントリポイント | 3 | 3 |
 | フェーズ6: Copilot スキル | 4 | 4 |
-| フェーズ7: Webview | 0 | 3 |
+| フェーズ7: Webview | 3 | 3 |
 | フェーズ8: Should Have 対応 | 0 | 5 |
 | **合計** | **22** | **30** |
