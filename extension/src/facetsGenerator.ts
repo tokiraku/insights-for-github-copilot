@@ -10,10 +10,10 @@ const FACETS_DIR = ".copilot-insights/facets";
 const SCHEMA_VERSION = "1.0";
 
 // ---------------------------------------------------------------------------
-// System prompt (equivalent to Python llm_client._SYSTEM_PROMPT)
+// Instruction prompt sent as the first User message (vscode.lm has no system role)
 // ---------------------------------------------------------------------------
 
-const SYSTEM_PROMPT = `You are an expert analyst specializing in developer productivity and AI assistant usage patterns.
+const INSTRUCTION_PROMPT = `You are an expert analyst specializing in developer productivity and AI assistant usage patterns.
 Your task is to analyze a GitHub Copilot chat session and produce a structured qualitative assessment.
 
 You will receive session metadata (quantitative metrics only — no raw conversation text).
@@ -77,6 +77,10 @@ export async function generateAllFacets(
       const facets = await generateFacets(meta, token);
       fs.writeFileSync(outPath, JSON.stringify(facets, null, 2), "utf8");
     } catch (err) {
+      if (err instanceof FacetsGenerationError && err.message.includes("No Copilot")) {
+        // Copilot unavailable — propagate so the caller can show a user-facing message.
+        throw err;
+      }
       console.error(`[copilot-insights] Failed to generate facets for session ${meta.session_id}:`, err);
     }
     onProgress?.(i + 1, metas.length);
@@ -108,7 +112,7 @@ export async function generateFacets(
   const userContent = buildUserMessage(summary);
 
   const messages = [
-    vscode.LanguageModelChatMessage.User(SYSTEM_PROMPT),
+    vscode.LanguageModelChatMessage.User(INSTRUCTION_PROMPT),
     vscode.LanguageModelChatMessage.User(userContent),
   ];
 
@@ -163,8 +167,14 @@ function parseFacets(rawText: string, sessionId: string): Facets {
   // Strip optional markdown code fences the model may add.
   if (text.startsWith("```")) {
     const lines = text.split("\n");
-    const endIdx = lines.lastIndexOf("```");
-    text = lines.slice(1, endIdx > 0 ? endIdx : lines.length).join("\n");
+    let endIdx = lines.length;
+    for (let i = lines.length - 1; i > 0; i--) {
+      if (lines[i].trimStart().startsWith("```")) {
+        endIdx = i;
+        break;
+      }
+    }
+    text = lines.slice(1, endIdx).join("\n");
   }
 
   let data: Record<string, unknown>;

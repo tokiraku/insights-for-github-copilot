@@ -23,9 +23,9 @@ export class InsightsNotFoundError extends Error {
  * Load all SessionMeta objects from the `.copilot-insights/session-meta/` directory.
  *
  * @param workspaceRoot - Absolute path to the VS Code workspace root folder.
- * @returns Array of SessionMeta objects. Empty array when no files are found.
+ * @returns Array of SessionMeta objects loaded from the `session-meta/` directory.
  * @throws {InsightsNotFoundError} When the `session-meta/` directory does not exist
- *   or contains no files (i.e. the CLI has not been run yet).
+ *   or contains no JSON files (i.e. the CLI has not been run yet).
  */
 export function loadSessionMetas(workspaceRoot: string): SessionMeta[] {
   const insightsDir = path.join(workspaceRoot, INSIGHTS_DIR);
@@ -59,7 +59,6 @@ export function loadSessionMetas(workspaceRoot: string): SessionMeta[] {
  */
 export function loadInsights(workspaceRoot: string): AggregatedInsights {
   const insightsDir = path.join(workspaceRoot, INSIGHTS_DIR);
-  const metaDir = path.join(insightsDir, SESSION_META_DIR);
   const facetsDir = path.join(insightsDir, FACETS_DIR);
 
   const sessionMetas = loadSessionMetas(workspaceRoot);
