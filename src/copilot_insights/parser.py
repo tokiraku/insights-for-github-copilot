@@ -35,6 +35,7 @@ class ParsedSession(TypedDict):
     creation_date: str  # ISO 8601 string
     selected_model: str
     requests: list[ParsedRequest]
+    workspace_id: str  # VS Code workspaceStorage directory name (hash); "" if not provided
 
 
 # ---------------------------------------------------------------------------
@@ -132,7 +133,7 @@ def _apply_response_patch(
 # Public API
 # ---------------------------------------------------------------------------
 
-def parse_jsonl_file(path: Path) -> ParsedSession | None:
+def parse_jsonl_file(path: Path, workspace_id: str = "") -> ParsedSession | None:
     """Parse a single Copilot Chat session `.jsonl` file.
 
     Reads every line and processes:
@@ -146,6 +147,7 @@ def parse_jsonl_file(path: Path) -> ParsedSession | None:
 
     Args:
         path: Absolute path to the ``.jsonl`` file.
+        workspace_id: VS Code workspaceStorage directory name to embed in the result.
     """
     try:
         lines = path.read_text(encoding="utf-8").splitlines()
@@ -216,4 +218,5 @@ def parse_jsonl_file(path: Path) -> ParsedSession | None:
         creation_date=creation_date,
         selected_model=selected_model,
         requests=requests,
+        workspace_id=workspace_id,
     )

@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 from copilot_insights.parser import ParsedSession, parse_jsonl_file
-from copilot_insights.workspace import list_jsonl_files
+from copilot_insights.workspace import list_jsonl_files_with_ids
 
 DEFAULT_DAYS = 30
 DEFAULT_MAX_SESSIONS = 50
@@ -46,7 +46,7 @@ def load_sessions(
 
     Steps:
     1. Enumerate all ``.jsonl`` files for *workspace_ids* via
-       :func:`~copilot_insights.workspace.list_jsonl_files`.
+       :func:`~copilot_insights.workspace.list_jsonl_files_with_ids`.
     2. Parse each file with :func:`~copilot_insights.parser.parse_jsonl_file`;
        skip files that cannot be parsed.
     3. Keep only sessions whose ``creation_date`` falls within the last *days*
@@ -64,12 +64,11 @@ def load_sessions(
         newest-first, capped at *max_sessions*.
     """
     cutoff = datetime.now(tz=UTC) - timedelta(days=days)
-    jsonl_files: list[Path] = list_jsonl_files(workspace_ids)
 
     sessions: list[tuple[datetime, ParsedSession]] = []
 
-    for path in jsonl_files:
-        session = parse_jsonl_file(path)
+    for ws_id, path in list_jsonl_files_with_ids(workspace_ids):
+        session = parse_jsonl_file(path, workspace_id=ws_id)
         if session is None:
             continue
 

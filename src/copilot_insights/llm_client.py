@@ -46,12 +46,23 @@ class FacetsGenerationError(Exception):
     """Raised when facets cannot be generated from the LLM response."""
 
 
+# Approximate USD cost per million tokens for claude-haiku-4-5 (prompt cache aware).
+# Source: https://www.anthropic.com/pricing (2026-04).
+_COST_PER_1M_INPUT = 0.80          # standard input tokens
+_COST_PER_1M_CACHE_WRITE = 1.00    # cache write tokens
+_COST_PER_1M_CACHE_READ = 0.08     # cache read tokens (90% discount)
+_COST_PER_1M_OUTPUT = 4.00         # output tokens
+
+
 class AnthropicClient:
     """Wrapper around the Anthropic SDK for generating session facets.
 
     Reads ANTHROPIC_API_KEY from the environment. Raises EnvironmentError
     if the key is absent. Uses prompt caching on the system prompt to
     reduce API costs when processing multiple sessions (NFR-005).
+
+    Accumulates usage statistics across calls; call :meth:`log_usage_summary`
+    after all sessions are processed to print cache hit rate and estimated cost.
     """
 
     def __init__(self, model: str = DEFAULT_MODEL) -> None:
@@ -71,6 +82,13 @@ class AnthropicClient:
             )
         self._client = anthropic.Anthropic(api_key=api_key)
         self._model = model
+
+        # Accumulated token counts for NFR-005 cost tracking.
+        self._total_input_tokens: int = 0
+        self._total_cache_creation_tokens: int = 0
+        self._total_cache_read_tokens: int = 0
+        self._total_output_tokens: int = 0
+        self._call_count: int = 0
 
     def generate_facets(
         self,
@@ -111,6 +129,7 @@ class AnthropicClient:
             messages=[{"role": "user", "content": user_content}],
         )
 
+        self._accumulate_usage(response)
         raw_text = _extract_text(response)
         return _parse_facets(raw_text, session_meta["session_id"])
 
@@ -134,6 +153,53 @@ class AnthropicClient:
         """
         summary = summarize_session(session)
         return self.generate_facets(session_meta, summary)
+
+    def _accumulate_usage(self, response: anthropic.types.Message) -> None:
+        """Add token counts from a response to the running totals."""
+        usage = response.usage
+        self._total_input_tokens += _safe_token_count(usage, "input_tokens")
+        self._total_cache_creation_tokens += _safe_token_count(usage, "cache_creation_input_tokens")
+        self._total_cache_read_tokens += _safe_token_count(usage, "cache_read_input_tokens")
+        self._total_output_tokens += _safe_token_count(usage, "output_tokens")
+        self._call_count += 1
+
+    def log_usage_summary(self) -> None:
+        """Print accumulated token usage, cache hit rate, and estimated cost.
+
+        Outputs to stdout so the summary appears in the normal pipeline run log.
+        Does nothing if no API calls have been made.
+        """
+        if self._call_count == 0:
+            return
+
+        total_input = self._total_input_tokens + self._total_cache_creation_tokens + self._total_cache_read_tokens
+        cache_hit_rate = (
+            self._total_cache_read_tokens / total_input * 100 if total_input > 0 else 0.0
+        )
+
+        # Estimated cost in USD
+        cost = (
+            self._total_input_tokens * _COST_PER_1M_INPUT
+            + self._total_cache_creation_tokens * _COST_PER_1M_CACHE_WRITE
+            + self._total_cache_read_tokens * _COST_PER_1M_CACHE_READ
+            + self._total_output_tokens * _COST_PER_1M_OUTPUT
+        ) / 1_000_000
+
+        print(
+            f"\nLLM usage summary ({self._call_count} call(s)):\n"
+            f"  Input tokens      : {self._total_input_tokens:,}\n"
+            f"  Cache write tokens: {self._total_cache_creation_tokens:,}\n"
+            f"  Cache read tokens : {self._total_cache_read_tokens:,}\n"
+            f"  Output tokens     : {self._total_output_tokens:,}\n"
+            f"  Cache hit rate    : {cache_hit_rate:.1f}%\n"
+            f"  Estimated cost    : ${cost:.4f} USD"
+            f" (based on claude-haiku-4-5 pricing; may differ for other models)"
+        )
+
+
+def _safe_token_count(usage: object, attr: str) -> int:
+    """Return the integer token count from a usage object attribute, defaulting to 0."""
+    return int(getattr(usage, attr, 0) or 0)
 
 
 def _build_user_message(meta: SessionMeta, summary: str) -> str:
