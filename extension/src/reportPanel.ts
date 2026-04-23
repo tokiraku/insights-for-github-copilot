@@ -7,9 +7,9 @@ import { AggregatedInsights } from "./models.js";
 /**
  * Singleton Webview panel that displays the full Copilot Insights HTML report.
  *
- * Call `ReportPanel.show()` to open or reveal the panel. The panel retains the
- * most recently loaded insights data in its HTML so that re-opening does not
- * require a disk read.
+ * Call `ReportPanel.show()` to open or reveal the panel. Each call reloads the
+ * latest insights data from disk and rebuilds the HTML, so the report always
+ * reflects the current state of `.copilot-insights/`.
  */
 export class ReportPanel {
   private static _instance: ReportPanel | undefined;
@@ -58,7 +58,7 @@ export class ReportPanel {
 
     if (ReportPanel._instance) {
       ReportPanel._instance._panel.webview.html = buildHtml(insights);
-      ReportPanel._instance._panel.reveal(vscode.ViewColumn.One);
+      ReportPanel._instance._panel.reveal();
       return;
     }
 
