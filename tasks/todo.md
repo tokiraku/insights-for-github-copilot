@@ -192,6 +192,63 @@
 
 ---
 
+## フェーズ9: vscode.lm API — 拡張機能側新規実装
+
+- [ ] [LLM-001] `extension/src/models.ts` に `SessionSummary` 型を追加（vscode.lm への入力用）
+  - 優先度: Must Have
+  - 関連要件: FR-003
+  - 完了基準: session-meta を要約した型が定義され、facetsGenerator で使用される
+
+- [ ] [LLM-002] `extension/src/facetsGenerator.ts` を新規作成（vscode.lm API で session-meta → facets を生成）
+  - 優先度: Must Have
+  - 関連要件: FR-003, NFR-003
+  - 完了基準: `vscode.lm.selectChatModels()` で Copilot モデルを取得し、session-meta JSON を入力として facets JSON を生成できる
+
+- [ ] [LLM-003] `extension/src/dataLoader.ts` を修正（facets 未生成でも session-meta だけで動けるようエラー処理を調整）
+  - 優先度: Must Have
+  - 関連要件: FR-004
+  - 完了基準: facets ディレクトリが存在しない場合でも session-meta のみで AggregatedInsights を返せる
+
+- [ ] [LLM-004] `extension/src/extension.ts` を修正（`/summary` 実行時に facets 未生成なら facetsGenerator を呼ぶ）
+  - 優先度: Must Have
+  - 関連要件: FR-004
+  - 完了基準: `@insights /summary` 実行時に facets が存在しない場合は vscode.lm で生成してからサマリを返す
+
+---
+
+## フェーズ10: Python CLI — Anthropic 依存の削除
+
+- [ ] [LLM-005] `src/copilot_insights/__main__.py` から Anthropic 関連コードを削除（facets 生成ステップ・`--skip-llm` オプション削除）
+  - 優先度: Must Have
+  - 関連要件: NFR-003
+  - 完了基準: `python -m copilot_insights` が session-meta 生成のみを行い、Anthropic 依存なしで動く
+
+- [ ] [LLM-006] `src/copilot_insights/llm_client.py` と `summarizer.py` を削除
+  - 優先度: Must Have
+  - 関連要件: NFR-003
+  - 完了基準: 2ファイルが削除され、他モジュールからの参照がなくなっている
+
+- [ ] [LLM-007] `pyproject.toml` から `anthropic` 依存を削除
+  - 優先度: Must Have
+  - 関連要件: NFR-003
+  - 完了基準: `pip install -e .` が `anthropic` なしで通る
+
+---
+
+## フェーズ11: テスト修正・ドキュメント更新
+
+- [ ] [LLM-008] Python テスト群から `test_llm_client.py` を削除し、影響を受けるテストを修正
+  - 優先度: Must Have
+  - 関連要件: FR-003
+  - 完了基準: `python -m pytest --ignore=tests/test_performance.py -q` が全件パス
+
+- [ ] [LLM-009] `README.md` を更新（API キー不要・フロー変更の反映）
+  - 優先度: Must Have
+  - 関連要件: -
+  - 完了基準: セットアップ手順・使い方セクションが新フローを正しく説明している
+
+---
+
 ## 進捗サマリー
 
 | フェーズ | 完了 | 総数 |
@@ -204,4 +261,7 @@
 | フェーズ6: Copilot スキル | 4 | 4 |
 | フェーズ7: Webview | 3 | 3 |
 | フェーズ8: Should Have 対応 | 5 | 5 |
-| **合計** | **27** | **30** |
+| フェーズ9: vscode.lm API — 拡張機能側新規実装 | 0 | 4 |
+| フェーズ10: Python CLI — Anthropic 依存の削除 | 0 | 3 |
+| フェーズ11: テスト修正・ドキュメント更新 | 0 | 2 |
+| **合計** | **27** | **39** |
