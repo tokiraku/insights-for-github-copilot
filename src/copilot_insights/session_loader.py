@@ -46,7 +46,7 @@ def load_sessions(
 
     Steps:
     1. Enumerate all ``.jsonl`` files for *workspace_ids* via
-       :func:`~copilot_insights.workspace.list_jsonl_files`.
+       :func:`~copilot_insights.workspace.list_jsonl_files_with_ids`.
     2. Parse each file with :func:`~copilot_insights.parser.parse_jsonl_file`;
        skip files that cannot be parsed.
     3. Keep only sessions whose ``creation_date`` falls within the last *days*

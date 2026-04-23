@@ -15,10 +15,10 @@
       "Bash(python -m pytest tests/test_performance.py -v -s)",
       "Bash(git commit -m ' *)",
       "Bash(python -m pytest -m performance -v -s)",
-      "Bash(git -C c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot branch --show-current)",
-      "Bash(git -C \"c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot\" checkout develop)",
-      "Bash(git -C \"c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot\" pull origin develop)",
-      "Bash(git -C \"c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot\" checkout -b feat/phase6-copilot-skill)",
+      "Bash(git branch --show-current)",
+      "Bash(git checkout develop)",
+      "Bash(git pull origin develop)",
+      "Bash(git checkout -b *)",
       "Bash(npm --version)",
       "Bash(where node *)",
       "Bash(powershell -Command \"node --version\")",
@@ -34,10 +34,11 @@
       "Bash(python -m pytest --ignore=tests/test_performance.py -q)",
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(python -m pytest tests/test_session_loader.py::TestLoadSessionsFiltering::test_custom_days_parameter tests/test_pipeline.py -v)",
-      "Bash(python -m copilot_insights --skip-llm --all-workspaces)"
+      "Bash(python -m copilot_insights --skip-llm --all-workspaces)",
+      "Bash(python -m pytest tests/test_parser.py::TestParseJsonlFileWorkspaceId -v)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\redcr\\OneDrive\\ドキュメント\\github\\insights-for-github-copilot\\extension"
+      "extension"
     ]
   },
   "enabledMcpjsonServers": [

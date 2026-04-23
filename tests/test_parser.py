@@ -332,9 +332,10 @@ class TestParseJsonlFileWorkspaceId:
 
     def test_workspace_id_in_session_loaded_via_session_loader(self, tmp_path):
         from unittest.mock import patch
+        from datetime import UTC, datetime, timedelta
         from copilot_insights.session_loader import load_sessions
 
-        date = "2026-04-20T10:00:00Z"
+        date = (datetime.now(UTC) - timedelta(days=5)).isoformat()
         path = _write_jsonl(tmp_path, "s.jsonl", [_init_line(creation_date=date), _snapshot_line([])])
 
         with patch(
