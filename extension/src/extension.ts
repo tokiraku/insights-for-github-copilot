@@ -1,12 +1,16 @@
 // VS Code extension entry point.
 // Registers the @insights Chat Participant and the "Open Report" command.
+import * as fs from "fs";
+import * as path from "path";
 import * as vscode from "vscode";
 
-import { InsightsNotFoundError, loadInsights } from "./dataLoader.js";
+import { InsightsNotFoundError, loadInsights, loadSessionMetas } from "./dataLoader.js";
+import { FacetsGenerationError, generateAllFacets } from "./facetsGenerator.js";
 import { buildSummary } from "./markdownSummary.js";
 import { ReportPanel } from "./reportPanel.js";
 
 const PARTICIPANT_ID = "copilot-insights.insights";
+const FACETS_DIR = ".copilot-insights/facets";
 
 export function activate(context: vscode.ExtensionContext): void {
   const participant = vscode.chat.createChatParticipant(
@@ -76,6 +80,29 @@ async function handleChatRequest(
   }
 
   try {
+    // Step 1: Load session-meta (throws InsightsNotFoundError if CLI not run yet)
+    const metas = loadSessionMetas(workspaceRoot);
+
+    // Step 2: Generate facets for sessions that don't have them yet
+    const missingSessions = metas.filter(
+      (m) => !fs.existsSync(path.join(workspaceRoot, FACETS_DIR, `${m.session_id}.json`)),
+    );
+
+    if (missingSessions.length > 0) {
+      stream.progress(
+        `Analyzing ${missingSessions.length} session(s) with Copilot…`,
+      );
+      await generateAllFacets(
+        workspaceRoot,
+        missingSessions,
+        token,
+        (current, total) => {
+          stream.progress(`Analyzing sessions… (${current}/${total})`);
+        },
+      );
+    }
+
+    // Step 3: Load aggregated insights and render summary
     const insights = loadInsights(workspaceRoot);
     stream.markdown(buildSummary(insights));
     stream.anchor(
@@ -85,6 +112,22 @@ async function handleChatRequest(
   } catch (err) {
     if (err instanceof InsightsNotFoundError) {
       stream.markdown(`_${err.message}_`);
+    } else if (err instanceof FacetsGenerationError) {
+      stream.markdown(
+        `_Copilot analysis failed: ${err.message}_\n\n` +
+          "_Showing summary based on session metadata only._",
+      );
+      // Fall back to summary without facets
+      try {
+        const insights = loadInsights(workspaceRoot);
+        stream.markdown(buildSummary(insights));
+        stream.anchor(
+          vscode.Uri.parse("command:copilot-insights.openReport"),
+          "詳細レポートを表示",
+        );
+      } catch {
+        // If even the fallback fails, the error above is sufficient.
+      }
     } else {
       stream.markdown(
         "_An unexpected error occurred while loading insights data._",

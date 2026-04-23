@@ -34,6 +34,24 @@ export interface Facets {
   suggested_patterns: string[];
 }
 
+/**
+ * Condensed representation of a session sent to vscode.lm for facets generation.
+ * Contains only the quantitative fields needed for qualitative analysis (NFR-002).
+ * Raw conversation text is never included.
+ */
+export interface SessionSummary {
+  session_id: string;
+  duration_minutes: number;
+  user_message_count: number;
+  tool_counts: Record<string, number>;
+  languages: string[];
+  input_tokens: number;
+  output_tokens: number;
+  lines_added: number;
+  lines_removed: number;
+  tool_errors: number;
+}
+
 /** Cross-session aggregated values used to render the summary and report. */
 export interface AggregatedInsights {
   sessionCount: number;
