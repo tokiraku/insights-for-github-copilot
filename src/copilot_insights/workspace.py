@@ -166,9 +166,8 @@ def get_chat_sessions_dir(workspace_id: str) -> Path:
 def list_jsonl_files(workspace_ids: list[str]) -> list[Path]:
     """Return all .jsonl files found in the chatSessions dirs for the given IDs.
 
-    Iterates each workspace ID in order and collects every ``*.jsonl`` file
-    inside its ``chatSessions/`` directory.  Missing or empty directories are
-    silently skipped.
+    Delegates to :func:`list_jsonl_files_with_ids` and returns paths only.
+    Missing or empty directories are silently skipped.
 
     Args:
         workspace_ids: Ordered list of workspace ID strings to scan.
@@ -176,13 +175,29 @@ def list_jsonl_files(workspace_ids: list[str]) -> list[Path]:
     Returns:
         List of Path objects, each pointing to a ``.jsonl`` session file.
     """
-    files: list[Path] = []
+    return [path for _, path in list_jsonl_files_with_ids(workspace_ids)]
+
+
+def list_jsonl_files_with_ids(workspace_ids: list[str]) -> list[tuple[str, Path]]:
+    """Return (workspace_id, path) pairs for all .jsonl session files.
+
+    Like :func:`list_jsonl_files` but also carries the workspace ID so that
+    callers can associate each session with its originating workspace.
+
+    Args:
+        workspace_ids: Ordered list of workspace ID strings to scan.
+
+    Returns:
+        List of ``(workspace_id, path)`` tuples, sorted by path within each workspace.
+    """
+    result: list[tuple[str, Path]] = []
     for ws_id in workspace_ids:
         sessions_dir = get_chat_sessions_dir(ws_id)
         if not sessions_dir.is_dir():
             continue
-        files.extend(sorted(sessions_dir.glob("*.jsonl")))
-    return files
+        for path in sorted(sessions_dir.glob("*.jsonl")):
+            result.append((ws_id, path))
+    return result
 
 
 def resolve_workspace_ids(workspace_path: Path | None) -> list[str]:

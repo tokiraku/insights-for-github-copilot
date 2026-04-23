@@ -13,6 +13,10 @@ from copilot_insights.session_loader import (
     load_sessions,
 )
 
+# Helper: wrap plain Path list as (workspace_id, path) pairs for mocking list_jsonl_files_with_ids
+def _as_ws_pairs(paths: list) -> list:
+    return [("ws0", p) for p in paths]
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -92,7 +96,7 @@ class TestLoadSessionsFiltering:
         date = _iso(_days_ago(1))
         _make_jsonl(tmp_path, "recent.jsonl", "s1", date)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[tmp_path / "recent.jsonl"]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([tmp_path / "recent.jsonl"])):
             result = load_sessions([], days=30)
 
         assert len(result) == 1
@@ -102,7 +106,7 @@ class TestLoadSessionsFiltering:
         date = _iso(_days_ago(31))
         _make_jsonl(tmp_path, "old.jsonl", "old_session", date)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[tmp_path / "old.jsonl"]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([tmp_path / "old.jsonl"])):
             result = load_sessions([], days=30)
 
         assert result == []
@@ -112,7 +116,7 @@ class TestLoadSessionsFiltering:
         date = _iso(_days_ago(29.999))
         _make_jsonl(tmp_path, "edge.jsonl", "edge_session", date)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[tmp_path / "edge.jsonl"]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([tmp_path / "edge.jsonl"])):
             result = load_sessions([], days=30)
 
         assert len(result) == 1
@@ -125,7 +129,7 @@ class TestLoadSessionsFiltering:
             encoding="utf-8",
         )
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([p])):
             result = load_sessions([], days=30)
 
         assert result == []
@@ -134,7 +138,7 @@ class TestLoadSessionsFiltering:
         p = tmp_path / "corrupt.jsonl"
         p.write_text("not json\n", encoding="utf-8")
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([p])):
             result = load_sessions([], days=30)
 
         assert result == []
@@ -146,8 +150,8 @@ class TestLoadSessionsFiltering:
         _make_jsonl(tmp_path, "s15.jsonl", "s15", date_15)
 
         with patch(
-            "copilot_insights.session_loader.list_jsonl_files",
-            return_value=[tmp_path / "s7.jsonl", tmp_path / "s15.jsonl"],
+            "copilot_insights.session_loader.list_jsonl_files_with_ids",
+            return_value=_as_ws_pairs([tmp_path / "s7.jsonl", tmp_path / "s15.jsonl"]),
         ):
             result = load_sessions([], days=10)
 
@@ -167,7 +171,7 @@ class TestLoadSessionsLimit:
             p = _make_jsonl(tmp_path, f"s{i}.jsonl", f"session_{i}", date)
             files.append(p)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=files):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs(files)):
             result = load_sessions([], days=30, max_sessions=5)
 
         assert len(result) == 5
@@ -176,7 +180,7 @@ class TestLoadSessionsLimit:
         date = _iso(_days_ago(1))
         _make_jsonl(tmp_path, "only.jsonl", "only_session", date)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[tmp_path / "only.jsonl"]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([tmp_path / "only.jsonl"])):
             result = load_sessions([], days=30, max_sessions=50)
 
         assert len(result) == 1
@@ -200,7 +204,7 @@ class TestLoadSessionsOrdering:
             p = _make_jsonl(tmp_path, f"s{i}.jsonl", f"session_{i}", _iso(dt))
             files.append(p)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=files):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs(files)):
             result = load_sessions([], days=30)
 
         ids = [s["session_id"] for s in result]
@@ -215,7 +219,7 @@ class TestLoadSessionsOrdering:
             p = _make_jsonl(tmp_path, f"s{i}.jsonl", f"session_{i}", date)
             files.append(p)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=files):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs(files)):
             result = load_sessions([], days=30, max_sessions=3)
 
         # Should keep sessions 0,1,2 (1,2,3 days ago) and drop 3,4 (4,5 days ago)
@@ -239,15 +243,14 @@ class TestLoadSessionsWorkspaceIds:
             captured.extend(ws_ids)
             return []
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", side_effect=fake_list):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", side_effect=fake_list):
             load_sessions(["ws1", "ws2"])
 
         assert captured == ["ws1", "ws2"]
 
     def test_returns_empty_list_when_no_files(self):
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=[]):
             result = load_sessions(["any_id"])
-
         assert result == []
 
 
@@ -274,7 +277,7 @@ class TestLoadSessionsIntDate:
         recent_ms = int((_days_ago(1)).timestamp() * 1000)
         p = self._make_jsonl_int_date(tmp_path, "int_date.jsonl", "sess-int", recent_ms)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([p])):
             result = load_sessions([], days=30)
 
         assert len(result) == 1
@@ -285,7 +288,7 @@ class TestLoadSessionsIntDate:
         old_ms = int((_days_ago(60)).timestamp() * 1000)
         p = self._make_jsonl_int_date(tmp_path, "old_int.jsonl", "sess-old-int", old_ms)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([p])):
             result = load_sessions([], days=30)
 
         assert result == []
@@ -294,7 +297,7 @@ class TestLoadSessionsIntDate:
         recent_ms = int((_days_ago(1)).timestamp() * 1000)
         p = self._make_jsonl_int_date(tmp_path, "norm.jsonl", "sess-norm", recent_ms)
 
-        with patch("copilot_insights.session_loader.list_jsonl_files", return_value=[p]):
+        with patch("copilot_insights.session_loader.list_jsonl_files_with_ids", return_value=_as_ws_pairs([p])):
             result = load_sessions([], days=30)
 
         # creation_date must be a string (ISO 8601) after normalization in parser

@@ -131,6 +131,8 @@ def run(
                 except FacetsGenerationError as exc:
                     print(f"  [{i}/{len(metas)}] {session_id[:16]}... facets failed: {exc}", file=sys.stderr)
 
+            llm_client.log_usage_summary()
+
     print(f"\nDone. Output written to: {output_root}")
     return 0
 

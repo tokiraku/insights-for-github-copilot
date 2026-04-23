@@ -311,3 +311,37 @@ class TestParseJsonlFileResponseChunks:
         chunk = result["requests"][0]["response_chunks"][0]
         assert chunk["kind"] == ""
         assert chunk["value"] == "plain markdown"
+
+
+# ---------------------------------------------------------------------------
+# parse_jsonl_file — workspace_id propagation
+# ---------------------------------------------------------------------------
+
+class TestParseJsonlFileWorkspaceId:
+    def test_workspace_id_defaults_to_empty_string(self, tmp_path):
+        path = _write_jsonl(tmp_path, "s.jsonl", [_init_line(), _snapshot_line([])])
+        result = parse_jsonl_file(path)
+        assert result is not None
+        assert result["workspace_id"] == ""
+
+    def test_workspace_id_propagated_when_provided(self, tmp_path):
+        path = _write_jsonl(tmp_path, "s.jsonl", [_init_line(), _snapshot_line([])])
+        result = parse_jsonl_file(path, workspace_id="abc123")
+        assert result is not None
+        assert result["workspace_id"] == "abc123"
+
+    def test_workspace_id_in_session_loaded_via_session_loader(self, tmp_path):
+        from unittest.mock import patch
+        from copilot_insights.session_loader import load_sessions
+
+        date = "2026-04-20T10:00:00Z"
+        path = _write_jsonl(tmp_path, "s.jsonl", [_init_line(creation_date=date), _snapshot_line([])])
+
+        with patch(
+            "copilot_insights.session_loader.list_jsonl_files_with_ids",
+            return_value=[("my_ws_id", path)],
+        ):
+            sessions = load_sessions([], days=365)
+
+        assert len(sessions) == 1
+        assert sessions[0]["workspace_id"] == "my_ws_id"

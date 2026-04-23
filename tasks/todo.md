@@ -165,27 +165,27 @@
 
 ## フェーズ8: Should Have 対応
 
-- [ ] [FR-006-01] `--all-workspaces` モード実装（全ワークスペーススキャン）
+- [x] [FR-006-01] `--all-workspaces` モード実装（全ワークスペーススキャン）
   - 優先度: Should Have
   - 関連要件: FR-006
   - 完了基準: `--all-workspaces` 指定時に全ワークスペースの chatSessions を対象に分析が走る
 
-- [ ] [FR-007-01] `suggested_rules` のサマリ内強調表示実装
+- [x] [FR-007-01] `suggested_rules` のサマリ内強調表示実装
   - 優先度: Should Have
   - 関連要件: FR-007
   - 完了基準: `copilot-instructions.md` に追記すべきルール候補が専用セクションで表示される
 
-- [ ] [FR-008-01] `--days N` オプション実装
+- [x] [FR-008-01] `--days N` オプション実装
   - 優先度: Should Have
   - 関連要件: FR-008
   - 完了基準: `--days 7` 指定で直近7日のセッションのみが対象になる（FR-001-04 の拡張）
 
-- [ ] [NFR-005-01] Anthropic プロンプトキャッシュの実装・コスト計測
+- [x] [NFR-005-01] Anthropic プロンプトキャッシュの実装・コスト計測
   - 優先度: Should Have
   - 関連要件: NFR-005
   - 完了基準: キャッシュヒット率をログ出力し、50セッション分の facets 生成コストが $1.00 USD 未満であることを確認
 
-- [ ] [NFR-006-01] `--skip-llm` オプション実装
+- [x] [NFR-006-01] `--skip-llm` オプション実装
   - 優先度: Should Have
   - 関連要件: NFR-006
   - 完了基準: `--skip-llm` 指定時に LLM API を呼ばず、既存の facets JSON のみでサマリが生成される
@@ -203,5 +203,5 @@
 | フェーズ5: CLI エントリポイント | 3 | 3 |
 | フェーズ6: Copilot スキル | 4 | 4 |
 | フェーズ7: Webview | 3 | 3 |
-| フェーズ8: Should Have 対応 | 0 | 5 |
-| **合計** | **22** | **30** |
+| フェーズ8: Should Have 対応 | 5 | 5 |
+| **合計** | **27** | **30** |

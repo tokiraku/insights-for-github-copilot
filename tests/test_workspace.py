@@ -13,6 +13,7 @@ from copilot_insights.workspace import (
     get_workspace_ids,
     get_workspace_storage_root,
     list_jsonl_files,
+    list_jsonl_files_with_ids,
     resolve_workspace_ids,
 )
 
@@ -475,3 +476,57 @@ class TestFindWorkspaceIdWithFileUri:
             result = find_workspace_id(target_folder)
 
         assert result == ws_id
+
+
+# ---------------------------------------------------------------------------
+# list_jsonl_files_with_ids
+# ---------------------------------------------------------------------------
+
+class TestListJsonlFilesWithIds:
+    def test_returns_workspace_id_with_each_file(self, tmp_path):
+        ws_id = "ws_a"
+        sessions_dir = tmp_path / ws_id / "chatSessions"
+        sessions_dir.mkdir(parents=True)
+        (sessions_dir / "session1.jsonl").touch()
+        (sessions_dir / "session2.jsonl").touch()
+
+        with patch(
+            "copilot_insights.workspace.get_workspace_storage_root",
+            return_value=tmp_path,
+        ):
+            result = list_jsonl_files_with_ids([ws_id])
+
+        assert len(result) == 2
+        assert all(ws == ws_id for ws, _ in result)
+        assert all(p.suffix == ".jsonl" for _, p in result)
+
+    def test_aggregates_from_multiple_workspaces_with_correct_ids(self, tmp_path):
+        for ws_id in ("ws1", "ws2"):
+            sessions_dir = tmp_path / ws_id / "chatSessions"
+            sessions_dir.mkdir(parents=True)
+            (sessions_dir / f"{ws_id}_session.jsonl").touch()
+
+        with patch(
+            "copilot_insights.workspace.get_workspace_storage_root",
+            return_value=tmp_path,
+        ):
+            result = list_jsonl_files_with_ids(["ws1", "ws2"])
+
+        ws_ids_returned = {ws for ws, _ in result}
+        assert ws_ids_returned == {"ws1", "ws2"}
+
+    def test_list_jsonl_files_unchanged_behavior(self, tmp_path):
+        """list_jsonl_files still returns just paths (no regression)."""
+        ws_id = "ws_compat"
+        sessions_dir = tmp_path / ws_id / "chatSessions"
+        sessions_dir.mkdir(parents=True)
+        (sessions_dir / "s.jsonl").touch()
+
+        with patch(
+            "copilot_insights.workspace.get_workspace_storage_root",
+            return_value=tmp_path,
+        ):
+            paths = list_jsonl_files([ws_id])
+
+        assert len(paths) == 1
+        assert isinstance(paths[0], Path)

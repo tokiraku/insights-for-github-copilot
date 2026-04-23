@@ -51,13 +51,25 @@ _VALID_LLM_JSON: dict[str, Any] = {
 }
 
 
-def _make_mock_response(text: str) -> MagicMock:
-    """Build a mock anthropic.types.Message with a single text block."""
+def _make_mock_response(
+    text: str,
+    input_tokens: int = 100,
+    cache_creation_tokens: int = 0,
+    cache_read_tokens: int = 0,
+    output_tokens: int = 200,
+) -> MagicMock:
+    """Build a mock anthropic.types.Message with a single text block and usage."""
     block = MagicMock()
     block.type = "text"
     block.text = text
+    usage = MagicMock()
+    usage.input_tokens = input_tokens
+    usage.cache_creation_input_tokens = cache_creation_tokens
+    usage.cache_read_input_tokens = cache_read_tokens
+    usage.output_tokens = output_tokens
     response = MagicMock()
     response.content = [block]
+    response.usage = usage
     return response
 
 
@@ -342,3 +354,98 @@ class TestFacetsWriteIntegration:
         assert data["schema_version"] == SCHEMA_VERSION
         assert data["session_id"] == "e2e-session"
         assert dest == tmp_path / "facets" / "e2e-session.json"
+
+
+# ---------------------------------------------------------------------------
+# NFR-005: usage accumulation and log_usage_summary
+# ---------------------------------------------------------------------------
+
+
+class TestUsageAccumulation:
+    def _make_client(self, monkeypatch: pytest.MonkeyPatch) -> AnthropicClient:
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        with patch("anthropic.Anthropic"):
+            return AnthropicClient()
+
+    def test_initial_counters_are_zero(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        client = self._make_client(monkeypatch)
+        assert client._total_input_tokens == 0
+        assert client._total_cache_creation_tokens == 0
+        assert client._total_cache_read_tokens == 0
+        assert client._total_output_tokens == 0
+        assert client._call_count == 0
+
+    def test_accumulate_usage_increments_counters(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        client = self._make_client(monkeypatch)
+        mock_resp = _make_mock_response(
+            json.dumps(_VALID_LLM_JSON),
+            input_tokens=50,
+            cache_creation_tokens=200,
+            cache_read_tokens=0,
+            output_tokens=100,
+        )
+        client._accumulate_usage(mock_resp)
+
+        assert client._total_input_tokens == 50
+        assert client._total_cache_creation_tokens == 200
+        assert client._total_output_tokens == 100
+        assert client._call_count == 1
+
+    def test_accumulate_usage_sums_across_calls(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        client = self._make_client(monkeypatch)
+        resp1 = _make_mock_response("", input_tokens=100, cache_read_tokens=50, output_tokens=80)
+        resp2 = _make_mock_response("", input_tokens=20, cache_read_tokens=300, output_tokens=60)
+        client._accumulate_usage(resp1)
+        client._accumulate_usage(resp2)
+
+        assert client._total_input_tokens == 120
+        assert client._total_cache_read_tokens == 350
+        assert client._total_output_tokens == 140
+        assert client._call_count == 2
+
+    def test_log_usage_summary_does_nothing_when_no_calls(
+        self, monkeypatch: pytest.MonkeyPatch, capsys
+    ) -> None:
+        client = self._make_client(monkeypatch)
+        client.log_usage_summary()
+        captured = capsys.readouterr()
+        assert captured.out == ""
+
+    def test_log_usage_summary_prints_after_calls(
+        self, monkeypatch: pytest.MonkeyPatch, capsys
+    ) -> None:
+        client = self._make_client(monkeypatch)
+        resp = _make_mock_response(
+            "", input_tokens=100, cache_creation_tokens=500, cache_read_tokens=200, output_tokens=150
+        )
+        client._accumulate_usage(resp)
+        client.log_usage_summary()
+
+        out = capsys.readouterr().out
+        assert "LLM usage summary" in out
+        assert "Cache hit rate" in out
+        assert "Estimated cost" in out
+
+    def test_log_usage_summary_shows_correct_cache_hit_rate(
+        self, monkeypatch: pytest.MonkeyPatch, capsys
+    ) -> None:
+        """Cache hit rate = cache_read / (input + cache_write + cache_read)."""
+        client = self._make_client(monkeypatch)
+        # 200 cache_read out of 200+0+200 = 400 total → 50%
+        resp = _make_mock_response("", input_tokens=200, cache_read_tokens=200, output_tokens=0)
+        client._accumulate_usage(resp)
+        client.log_usage_summary()
+
+        out = capsys.readouterr().out
+        assert "50.0%" in out
+
+    def test_generate_facets_increments_call_count(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+        mock_response = _make_mock_response(json.dumps(_VALID_LLM_JSON))
+
+        with patch("anthropic.Anthropic") as mock_cls:
+            mock_cls.return_value.messages.create.return_value = mock_response
+            client = AnthropicClient()
+            client.generate_facets(_BASE_META, "summary")
+
+        assert client._call_count == 1

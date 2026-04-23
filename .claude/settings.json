@@ -14,7 +14,30 @@
       "Bash(python -m copilot_insights --skip-llm --days 7)",
       "Bash(python -m pytest tests/test_performance.py -v -s)",
       "Bash(git commit -m ' *)",
-      "Bash(python -m pytest -m performance -v -s)"
+      "Bash(python -m pytest -m performance -v -s)",
+      "Bash(git -C c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot branch --show-current)",
+      "Bash(git -C \"c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot\" checkout develop)",
+      "Bash(git -C \"c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot\" pull origin develop)",
+      "Bash(git -C \"c:/Users/redcr/OneDrive/ドキュメント/github/insights-for-github-copilot\" checkout -b feat/phase6-copilot-skill)",
+      "Bash(npm --version)",
+      "Bash(where node *)",
+      "Bash(powershell -Command \"node --version\")",
+      "PowerShell(node --version)",
+      "PowerShell(npm --version)",
+      "Bash(npm run *)",
+      "Bash(npx tsc *)",
+      "Bash(ls /usr/local/bin/node*)",
+      "Bash(ls ~/.nvm/versions/node/*/bin/tsc)",
+      "PowerShell(Get-Command node, npm, npx -ErrorAction SilentlyContinue)",
+      "mcp__github__list_pull_requests",
+      "Bash(python -m pytest tests/test_parser.py tests/test_workspace.py tests/test_session_loader.py -v)",
+      "Bash(python -m pytest --ignore=tests/test_performance.py -q)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(python -m pytest tests/test_session_loader.py::TestLoadSessionsFiltering::test_custom_days_parameter tests/test_pipeline.py -v)",
+      "Bash(python -m copilot_insights --skip-llm --all-workspaces)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\redcr\\OneDrive\\ドキュメント\\github\\insights-for-github-copilot\\extension"
     ]
   },
   "enabledMcpjsonServers": [

@@ -86,11 +86,14 @@ function buildFriction(insights: AggregatedInsights): string {
 function buildSuggestedRules(insights: AggregatedInsights): string {
   const items = insights.suggestedRules.slice(0, MAX_LIST_ITEMS);
   if (items.length === 0) {
-    return "### Suggested Rules\n_No rule suggestions available yet._";
+    return "### Suggested Rules for `copilot-instructions.md`\n_No rule suggestions available yet._";
   }
-  const header = "### Suggested Rules\n_Consider adding these to `copilot-instructions.md`:_";
-  const rows = items.map((r) => `- ${r}`).join("\n");
-  return `${header}\n${rows}`;
+  const intro = [
+    "### Suggested Rules for `copilot-instructions.md`",
+    "_Based on your session patterns, consider adding the following rules:_",
+  ].join("\n");
+  const rows = items.map((r) => `- **${r.replace(/`/g, "\\`")}**`).join("\n");
+  return `${intro}\n${rows}`;
 }
 
 function buildReportFooter(): string {
