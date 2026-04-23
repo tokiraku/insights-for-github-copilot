@@ -194,22 +194,22 @@
 
 ## フェーズ9: vscode.lm API — 拡張機能側新規実装
 
-- [ ] [LLM-001] `extension/src/models.ts` に `SessionSummary` 型を追加（vscode.lm への入力用）
+- [x] [LLM-001] `extension/src/models.ts` に `SessionSummary` 型を追加（vscode.lm への入力用）
   - 優先度: Must Have
   - 関連要件: FR-003
   - 完了基準: session-meta を要約した型が定義され、facetsGenerator で使用される
 
-- [ ] [LLM-002] `extension/src/facetsGenerator.ts` を新規作成（vscode.lm API で session-meta → facets を生成）
+- [x] [LLM-002] `extension/src/facetsGenerator.ts` を新規作成（vscode.lm API で session-meta → facets を生成）
   - 優先度: Must Have
   - 関連要件: FR-003, NFR-003
   - 完了基準: `vscode.lm.selectChatModels()` で Copilot モデルを取得し、session-meta JSON を入力として facets JSON を生成できる
 
-- [ ] [LLM-003] `extension/src/dataLoader.ts` を修正（facets 未生成でも session-meta だけで動けるようエラー処理を調整）
+- [x] [LLM-003] `extension/src/dataLoader.ts` を修正（facets 未生成でも session-meta だけで動けるようエラー処理を調整）
   - 優先度: Must Have
   - 関連要件: FR-004
   - 完了基準: facets ディレクトリが存在しない場合でも session-meta のみで AggregatedInsights を返せる
 
-- [ ] [LLM-004] `extension/src/extension.ts` を修正（`/summary` 実行時に facets 未生成なら facetsGenerator を呼ぶ）
+- [x] [LLM-004] `extension/src/extension.ts` を修正（`/summary` 実行時に facets 未生成なら facetsGenerator を呼ぶ）
   - 優先度: Must Have
   - 関連要件: FR-004
   - 完了基準: `@insights /summary` 実行時に facets が存在しない場合は vscode.lm で生成してからサマリを返す
@@ -261,7 +261,7 @@
 | フェーズ6: Copilot スキル | 4 | 4 |
 | フェーズ7: Webview | 3 | 3 |
 | フェーズ8: Should Have 対応 | 5 | 5 |
-| フェーズ9: vscode.lm API — 拡張機能側新規実装 | 0 | 4 |
+| フェーズ9: vscode.lm API — 拡張機能側新規実装 | 4 | 4 |
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 0 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 0 | 2 |
 | **合計** | **27** | **39** |

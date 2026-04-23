@@ -13,25 +13,23 @@ export class InsightsNotFoundError extends Error {
   constructor(insightsDir: string) {
     super(
       `No .copilot-insights/ data found at "${insightsDir}". ` +
-        "Run `python -m copilot_insights` first to generate session data.",
+        "Run `python -m copilot_insights` first to generate session metadata.",
     );
     this.name = "InsightsNotFoundError";
   }
 }
 
 /**
- * Load and aggregate all session-meta and facets JSON files from the
- * `.copilot-insights/` directory located at the workspace root.
+ * Load all SessionMeta objects from the `.copilot-insights/session-meta/` directory.
  *
  * @param workspaceRoot - Absolute path to the VS Code workspace root folder.
- * @returns Aggregated insights derived from all available session data.
- * @throws {InsightsNotFoundError} When the `.copilot-insights/` directory or
- *   its `session-meta/` sub-directory does not exist or contains no files.
+ * @returns Array of SessionMeta objects loaded from the `session-meta/` directory.
+ * @throws {InsightsNotFoundError} When the `session-meta/` directory does not exist
+ *   or contains no JSON files (i.e. the CLI has not been run yet).
  */
-export function loadInsights(workspaceRoot: string): AggregatedInsights {
+export function loadSessionMetas(workspaceRoot: string): SessionMeta[] {
   const insightsDir = path.join(workspaceRoot, INSIGHTS_DIR);
   const metaDir = path.join(insightsDir, SESSION_META_DIR);
-  const facetsDir = path.join(insightsDir, FACETS_DIR);
 
   if (!fs.existsSync(metaDir)) {
     throw new InsightsNotFoundError(insightsDir);
@@ -42,6 +40,28 @@ export function loadInsights(workspaceRoot: string): AggregatedInsights {
     throw new InsightsNotFoundError(insightsDir);
   }
 
+  return sessionMetas;
+}
+
+/**
+ * Load and aggregate all session-meta and facets JSON files from the
+ * `.copilot-insights/` directory located at the workspace root.
+ *
+ * Facets are optional — when the facets directory is absent or empty,
+ * the aggregated result still contains all quantitative session-meta data.
+ * Qualitative fields (wins, frictions, suggestedRules, projectAreaCounts)
+ * will simply be empty until facets are generated via vscode.lm.
+ *
+ * @param workspaceRoot - Absolute path to the VS Code workspace root folder.
+ * @returns Aggregated insights derived from all available session data.
+ * @throws {InsightsNotFoundError} When the `.copilot-insights/` directory or
+ *   its `session-meta/` sub-directory does not exist or contains no files.
+ */
+export function loadInsights(workspaceRoot: string): AggregatedInsights {
+  const insightsDir = path.join(workspaceRoot, INSIGHTS_DIR);
+  const facetsDir = path.join(insightsDir, FACETS_DIR);
+
+  const sessionMetas = loadSessionMetas(workspaceRoot);
   const facetsMap = buildFacetsMap(facetsDir);
 
   return aggregate(sessionMetas, facetsMap);
