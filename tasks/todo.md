@@ -284,7 +284,7 @@
 > **目的**: 拡張機能単体で `.copilot-insights/session-meta/` を生成できるようにする。
 > Python CLI を事前実行しなくても `@insights /summary` が動くようにする。
 
-- [ ] [TS-001] `extension/src/sessionScanner.ts` を新規作成（workspaceStorage パス解決・.jsonl 列挙）
+- [x] [TS-001] `extension/src/sessionScanner.ts` を新規作成（workspaceStorage パス解決・.jsonl 列挙）
   - 優先度: Must Have
   - 完了基準:
     - `process.env.APPDATA` から `workspaceStorage` ルートを取得できる
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 0 | 6 |
-| **合計** | **38** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 1 | 6 |
+| **合計** | **39** | **52** |
