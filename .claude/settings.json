@@ -35,7 +35,12 @@
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(python -m pytest tests/test_session_loader.py::TestLoadSessionsFiltering::test_custom_days_parameter tests/test_pipeline.py -v)",
       "Bash(python -m copilot_insights --skip-llm --all-workspaces)",
-      "Bash(python -m pytest tests/test_parser.py::TestParseJsonlFileWorkspaceId -v)"
+      "Bash(python -m pytest tests/test_parser.py::TestParseJsonlFileWorkspaceId -v)",
+      "Bash(pip install *)",
+      "Bash(python -m ruff check src/copilot_insights/)",
+      "Bash(python -m ruff check src/ tests/)",
+      "Bash(python -m ruff check src/ tests/test_pipeline.py --fix)",
+      "Bash(python -m ruff check src/ tests/test_pipeline.py)"
     ],
     "additionalDirectories": [
       "extension"

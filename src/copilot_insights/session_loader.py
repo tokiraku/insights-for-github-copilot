@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
 
 from copilot_insights.parser import ParsedSession, parse_jsonl_file
 from copilot_insights.workspace import list_jsonl_files_with_ids
