@@ -309,7 +309,7 @@
     - `tool_counts` / `languages` / `lines_added` / `lines_removed` / `files_modified` / `tool_errors` が正しく算出される
     - トークン数はテキスト長 ÷ 4 の推定式で算出される
 
-- [ ] [TS-004] `extension/src/sessionMetaGenerator.ts` を新規作成（パイプライン統合）
+- [x] [TS-004] `extension/src/sessionMetaGenerator.ts` を新規作成（パイプライン統合）
   - 優先度: Must Have
   - 完了基準:
     - `generateSessionMetas(workspaceRoot)` を呼ぶと `.copilot-insights/session-meta/` に JSON が書き出される
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 3 | 6 |
-| **合計** | **41** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 4 | 6 |
+| **合計** | **42** | **52** |
