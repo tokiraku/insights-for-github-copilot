@@ -323,7 +323,7 @@
     - 生成中は `stream.progress()` で進捗を表示する
     - 生成失敗時はわかりやすいエラーメッセージを表示する
 
-- [ ] [TS-test] sessionParser / sessionExtractor のユニットテスト
+- [x] [TS-test] sessionParser / sessionExtractor のユニットテスト
   - 優先度: Must Have
   - 完了基準:
     - サンプル JSONL 文字列を使ってパーサーが正しく `ParsedSession` を返すことをテストが証明する
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 5 | 6 |
-| **合計** | **43** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 6 | 6 |
+| **合計** | **44** | **52** |

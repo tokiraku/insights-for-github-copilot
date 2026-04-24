@@ -41,7 +41,8 @@
       "PowerShell(code --version 2>&1)",
       "Bash(python -m copilot_insights)",
       "Bash(python -m copilot_insights --workspace \"c:\\\\Users\\\\redcr\\\\OneDrive\\\\ドキュメント\\\\github\\\\tokigawa-dashboard\")",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(npm test *)"
     ],
     "additionalDirectories": [
       "extension",
