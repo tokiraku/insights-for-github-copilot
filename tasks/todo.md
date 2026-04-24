@@ -292,7 +292,7 @@
     - 対象 workspace の `chatSessions/*.jsonl` ファイル一覧を返せる
     - 30日フィルタ・最大50件の制限を適用できる
 
-- [ ] [TS-002] `extension/src/sessionParser.ts` を新規作成（.jsonl パーサー）
+- [x] [TS-002] `extension/src/sessionParser.ts` を新規作成（.jsonl パーサー）
   - 優先度: Must Have
   - 完了基準:
     - `kind=0` からセッション ID・`creationDate`・モデル名を抽出できる
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 1 | 6 |
-| **合計** | **39** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 2 | 6 |
+| **合計** | **40** | **52** |
