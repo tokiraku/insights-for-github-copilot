@@ -3,15 +3,10 @@
     "allow": [
       "Read(.claude/**)",
       "WebSearch",
-      "Bash(python -m copilot_insights --skip-llm)",
       "Bash(echo \"exit: $?\")",
-      "Bash(python -m copilot_insights --days 7 --skip-llm)",
-      "Bash(python -m copilot_insights --all-workspaces --skip-llm)",
-      "Bash(python -m copilot_insights --workspace . --skip-llm)",
       "Bash(python -m pytest tests/ -v)",
       "Bash(python -m pytest tests/test_pipeline.py -v)",
       "Bash(python -m pytest tests/ -q)",
-      "Bash(python -m copilot_insights --skip-llm --days 7)",
       "Bash(python -m pytest tests/test_performance.py -v -s)",
       "Bash(git commit -m ' *)",
       "Bash(python -m pytest -m performance -v -s)",
@@ -34,8 +29,12 @@
       "Bash(python -m pytest --ignore=tests/test_performance.py -q)",
       "Bash(node_modules/.bin/tsc --noEmit)",
       "Bash(python -m pytest tests/test_session_loader.py::TestLoadSessionsFiltering::test_custom_days_parameter tests/test_pipeline.py -v)",
-      "Bash(python -m copilot_insights --skip-llm --all-workspaces)",
-      "Bash(python -m pytest tests/test_parser.py::TestParseJsonlFileWorkspaceId -v)"
+      "Bash(python -m pytest tests/test_parser.py::TestParseJsonlFileWorkspaceId -v)",
+      "Bash(pip install *)",
+      "Bash(python -m ruff check src/copilot_insights/)",
+      "Bash(python -m ruff check src/ tests/)",
+      "Bash(python -m ruff check src/ tests/test_pipeline.py --fix)",
+      "Bash(python -m ruff check src/ tests/test_pipeline.py)"
     ],
     "additionalDirectories": [
       "extension"

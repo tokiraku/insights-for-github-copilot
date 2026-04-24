@@ -7,9 +7,7 @@ name = "copilot-insights"
 version = "0.1.0"
 description = "Analyze GitHub Copilot Chat session history and generate insights"
 requires-python = ">=3.11"
-dependencies = [
-    "anthropic>=0.25.0",
-]
+dependencies = []
 
 [project.optional-dependencies]
 dev = [

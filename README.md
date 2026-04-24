@@ -2,8 +2,8 @@
 
 GitHub Copilot Chat のセッション履歴を分析し、利用傾向・改善提案を VS Code 上で確認できるツールです。
 
-- **CLI ツール（Python）**: セッション JSONL を解析して定量メタデータと LLM による定性分析を生成します
-- **VS Code 拡張機能（TypeScript）**: Copilot Chat パネルに `@insights` コマンドでサマリと HTML レポートを表示します
+- **CLI ツール（Python）**: セッション JSONL を解析して定量メタデータ（session-meta）を生成します
+- **VS Code 拡張機能（TypeScript）**: vscode.lm API で session-meta から定性分析（facets）を自動生成し、Copilot Chat パネルに `@insights` コマンドでサマリと HTML レポートを表示します
 
 ---
 
@@ -14,7 +14,8 @@ GitHub Copilot Chat のセッション履歴を分析し、利用傾向・改善
 | Python | 3.11 以上 |
 | VS Code | 1.90.0 以上 |
 | GitHub Copilot Chat | 有効化済み |
-| Anthropic API キー | facets 生成に必要（`--skip-llm` で省略可） |
+
+> **API キー不要**: facets の生成は VS Code 拡張機能が vscode.lm API（GitHub Copilot）を通じて行うため、Anthropic API キーは不要です。
 
 ---
 
@@ -26,17 +27,7 @@ GitHub Copilot Chat のセッション履歴を分析し、利用傾向・改善
 pip install -e .
 ```
 
-### 2. Anthropic API キーの設定
-
-```bash
-# Windows (PowerShell)
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-
-# macOS / Linux
-export ANTHROPIC_API_KEY="sk-ant-..."
-```
-
-### 3. VS Code 拡張機能のビルド（開発時）
+### 2. VS Code 拡張機能のビルド（開発時）
 
 ```bash
 cd extension
@@ -53,19 +44,19 @@ npm run compile
 全体の流れは以下の 2 ステップです。
 
 ```
-Step 1: python -m copilot_insights   ← ここで AI 分析が走る
+Step 1: python -m copilot_insights   ← session-meta を生成
           │
           ▼
-        .copilot-insights/ に分析結果を保存
+        .copilot-insights/session-meta/ に定量データを保存
           │
           ▼
-Step 2: @insights /summary           ← 保存済み結果を表示
+Step 2: @insights /summary           ← 拡張機能が facets を自動生成してサマリを表示
         @insights /report
 ```
 
-### Step 1: CLI ツールで AI 分析を実行
+### Step 1: CLI ツールで session-meta を生成
 
-分析したいワークスペースのディレクトリで実行します。VS Code の chatSessions を読み込み、**Anthropic API を呼び出して AI 分析**を行い、結果を `.copilot-insights/` に保存します。
+分析したいワークスペースのディレクトリで実行します。VS Code の chatSessions を読み込み、セッションの定量メタデータを `.copilot-insights/session-meta/` に保存します。
 
 ```bash
 # 基本実行（過去 30 日・最大 50 セッション）
@@ -74,9 +65,6 @@ python -m copilot_insights
 # 過去 7 日間のみ対象
 python -m copilot_insights --days 7
 
-# LLM API を使わず既存データだけでサマリ生成（API キー不要）
-python -m copilot_insights --skip-llm
-
 # 分析するワークスペースを明示指定
 python -m copilot_insights --workspace /path/to/your/project
 
@@ -84,17 +72,17 @@ python -m copilot_insights --workspace /path/to/your/project
 python -m copilot_insights --all-workspaces
 ```
 
-実行すると `.copilot-insights/` ディレクトリに以下が生成されます。
+実行すると `.copilot-insights/session-meta/` にセッションごとの定量データが保存されます。
 
 ```
 .copilot-insights/
   session-meta/    # セッションごとの定量データ（JSON）
-  facets/          # AI による定性分析（JSON）
+  facets/          # AI による定性分析（JSON）← @insights 実行時に拡張機能が自動生成
 ```
 
 ### Step 2: VS Code 拡張機能で結果を表示
 
-Step 1 の完了後、Copilot Chat を開いて以下のコマンドを入力します。
+Step 1 の完了後、Copilot Chat を開いて以下のコマンドを入力します。facets がまだ生成されていないセッションは、vscode.lm API（GitHub Copilot）を使って自動的に生成されます。
 
 | コマンド | 説明 |
 |---------|------|
@@ -122,8 +110,8 @@ Webview パネルで上記サマリの詳細版を表示します。
 
 ## データとプライバシー
 
-- 分析対象は **ローカルの** `%AppData%\Code\User\workspaceStorage\{id}\chatSessions\` のみです
-- チャットの生テキストは外部に送信しません。LLM API へ送るのはセッションの**要約情報のみ**です
+- 分析対象は **ローカルの** VS Code ユーザーデータ配下の `workspaceStorage/{id}/chatSessions/` のみです（Windows: `%AppData%\Code\User\`、macOS: `~/Library/Application Support/Code/`、Linux: `~/.config/Code/`）
+- チャットの生テキストは外部に送信しません。vscode.lm API へ送るのはセッションの**要約情報のみ**です
 - `.copilot-insights/` には個人的なセッション情報が含まれるため、`.gitignore` への追加を推奨します
 
 ```gitignore

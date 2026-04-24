@@ -218,17 +218,17 @@
 
 ## フェーズ10: Python CLI — Anthropic 依存の削除
 
-- [ ] [LLM-005] `src/copilot_insights/__main__.py` から Anthropic 関連コードを削除（facets 生成ステップ・`--skip-llm` オプション削除）
+- [x] [LLM-005] `src/copilot_insights/__main__.py` から Anthropic 関連コードを削除（facets 生成ステップ・`--skip-llm` オプション削除）
   - 優先度: Must Have
   - 関連要件: NFR-003
   - 完了基準: `python -m copilot_insights` が session-meta 生成のみを行い、Anthropic 依存なしで動く
 
-- [ ] [LLM-006] `src/copilot_insights/llm_client.py` と `summarizer.py` を削除
+- [x] [LLM-006] `src/copilot_insights/llm_client.py` と `summarizer.py` を削除
   - 優先度: Must Have
   - 関連要件: NFR-003
   - 完了基準: 2ファイルが削除され、他モジュールからの参照がなくなっている
 
-- [ ] [LLM-007] `pyproject.toml` から `anthropic` 依存を削除
+- [x] [LLM-007] `pyproject.toml` から `anthropic` 依存を削除
   - 優先度: Must Have
   - 関連要件: NFR-003
   - 完了基準: `pip install -e .` が `anthropic` なしで通る
@@ -237,12 +237,12 @@
 
 ## フェーズ11: テスト修正・ドキュメント更新
 
-- [ ] [LLM-008] Python テスト群から `test_llm_client.py` を削除し、影響を受けるテストを修正
+- [x] [LLM-008] Python テスト群から `test_llm_client.py` を削除し、影響を受けるテストを修正
   - 優先度: Must Have
   - 関連要件: FR-003
   - 完了基準: `python -m pytest --ignore=tests/test_performance.py -q` が全件パス
 
-- [ ] [LLM-009] `README.md` を更新（API キー不要・フロー変更の反映）
+- [x] [LLM-009] `README.md` を更新（API キー不要・フロー変更の反映）
   - 優先度: Must Have
   - 関連要件: -
   - 完了基準: セットアップ手順・使い方セクションが新フローを正しく説明している
@@ -262,6 +262,6 @@
 | フェーズ7: Webview | 3 | 3 |
 | フェーズ8: Should Have 対応 | 5 | 5 |
 | フェーズ9: vscode.lm API — 拡張機能側新規実装 | 4 | 4 |
-| フェーズ10: Python CLI — Anthropic 依存の削除 | 0 | 3 |
-| フェーズ11: テスト修正・ドキュメント更新 | 0 | 2 |
-| **合計** | **27** | **39** |
+| フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
+| フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
+| **合計** | **32** | **39** |
