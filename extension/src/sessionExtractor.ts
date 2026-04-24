@@ -171,7 +171,7 @@ function extractFilesAndLanguages(invocations: ToolInvocation[]): {
   files: string[];
   languages: string[];
 } {
-  const files: string[] = [];
+  const filesSet = new Set<string>();
   const langCounts: Record<string, number> = {};
 
   for (const inv of invocations) {
@@ -179,9 +179,7 @@ function extractFilesAndLanguages(invocations: ToolInvocation[]): {
     for (const key of ["file_path", "path", "filePath", "filename"] as const) {
       const pathVal = toolInput[key];
       if (typeof pathVal === "string" && pathVal) {
-        if (!files.includes(pathVal)) {
-          files.push(pathVal);
-        }
+        filesSet.add(pathVal);
         const ext = extractFileExtension(pathVal);
         if (ext) {
           const lang = EXT_TO_LANGUAGE[ext] ?? capitalize(ext);
@@ -195,7 +193,7 @@ function extractFilesAndLanguages(invocations: ToolInvocation[]): {
   const languages = Object.keys(langCounts).sort(
     (a, b) => langCounts[b]! - langCounts[a]!,
   );
-  return { files, languages };
+  return { files: Array.from(filesSet), languages };
 }
 
 /** Sum lines_added and lines_removed from tool invocation diffs. */
@@ -210,17 +208,18 @@ function countDiffLines(invocations: ToolInvocation[]): {
     const toolInput = resolveToolInput(inv);
     const toolName = stringField(inv, "toolName", "name").toLowerCase();
 
-    if (toolName === "write" || toolName === "notebookedit" || toolName.includes("write")) {
-      const content = stringField(toolInput, "content", "new_string");
+    const isWrite = toolName === "write" || toolName === "notebookedit";
+    const isEdit =
+      toolName === "edit" ||
+      toolName === "str_replace" ||
+      toolName === "str_replace_editor";
+
+    if (isWrite) {
+      const content = stringField(toolInput, "content");
       if (content) {
         added += countLines(content);
       }
-    } else if (
-      toolName === "edit" ||
-      toolName === "str_replace" ||
-      toolName === "str_replace_editor" ||
-      toolName.includes("edit")
-    ) {
+    } else if (isEdit) {
       const newStr = stringField(toolInput, "new_string", "new_content");
       const oldStr = stringField(toolInput, "old_string", "old_content");
       if (newStr) added += countLines(newStr);
@@ -297,6 +296,7 @@ function extractFileExtension(filePath: string): string {
 
 /** Count non-empty lines in a string. */
 function countLines(text: string): number {
+  if (!text) return 0;
   const lines = text.split("\n").length;
   return text.endsWith("\n") ? lines - 1 : lines;
 }

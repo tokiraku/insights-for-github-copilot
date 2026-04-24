@@ -74,10 +74,14 @@ export async function generateSessionMetas(
 
     const outputPath = path.join(metaDir, `${session.sessionId}.json`);
 
-    // Skip sessions that already have a session-meta file (incremental update).
+    // Skip sessions whose meta file is newer than the source jsonl (incremental update).
     if (fs.existsSync(outputPath)) {
-      onProgress?.(i + 1, total);
-      continue;
+      const jsonlMtime = fs.statSync(filePath).mtimeMs;
+      const metaMtime = fs.statSync(outputPath).mtimeMs;
+      if (jsonlMtime <= metaMtime) {
+        onProgress?.(i + 1, total);
+        continue;
+      }
     }
 
     const meta = extractSessionMeta(session);
