@@ -316,7 +316,7 @@
     - 既存の session-meta は上書きせずスキップできる（差分更新）
     - 進捗コールバック `(current, total) => void` を受け取り呼び出せる
 
-- [ ] [TS-005] `extension/src/extension.ts` を修正（`InsightsNotFoundError` 時に自動生成）
+- [x] [TS-005] `extension/src/extension.ts` を修正（`InsightsNotFoundError` 時に自動生成）
   - 優先度: Must Have
   - 完了基準:
     - `@insights /summary` 実行時に session-meta が存在しない場合、`generateSessionMetas()` を自動実行してからサマリーを返す
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 4 | 6 |
-| **合計** | **42** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 5 | 6 |
+| **合計** | **43** | **52** |

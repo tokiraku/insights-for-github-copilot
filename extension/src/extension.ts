@@ -8,6 +8,7 @@ import { InsightsNotFoundError, loadInsights, loadSessionMetas } from "./dataLoa
 import { FacetsGenerationError, generateAllFacets } from "./facetsGenerator.js";
 import { buildSummary } from "./markdownSummary.js";
 import { ReportPanel } from "./reportPanel.js";
+import { generateSessionMetas } from "./sessionMetaGenerator.js";
 
 const PARTICIPANT_ID = "copilot-insights.insights";
 const FACETS_DIR = ".copilot-insights/facets";
@@ -80,10 +81,37 @@ async function handleChatRequest(
   }
 
   try {
-    // Step 1: Load session-meta (throws InsightsNotFoundError if CLI not run yet)
-    const metas = loadSessionMetas(workspaceRoot);
+    // Step 1: Ensure session-meta files exist; auto-generate if not.
+    let metas = tryLoadSessionMetas(workspaceRoot);
+    if (metas === null) {
+      stream.progress("Generating session metadata from Copilot Chat history…");
+      try {
+        await generateSessionMetas(workspaceRoot, {
+          token,
+          onProgress: (current, total) => {
+            stream.progress(`Reading sessions… (${current}/${total})`);
+          },
+        });
+        metas = tryLoadSessionMetas(workspaceRoot);
+      } catch (genErr) {
+        const msg = genErr instanceof Error ? genErr.message : String(genErr);
+        stream.markdown(
+          `_Could not generate session metadata: ${msg}_\n\n` +
+            "_Make sure you have opened this workspace in VS Code and used Copilot Chat at least once._",
+        );
+        return {};
+      }
 
-    // Step 2: Generate facets for sessions that don't have them yet
+      if (metas === null || metas.length === 0) {
+        stream.markdown(
+          "_No Copilot Chat sessions found for this workspace in the last 30 days._\n\n" +
+            "_Start a conversation with Copilot Chat, then run `/summary` again._",
+        );
+        return {};
+      }
+    }
+
+    // Step 2: Generate facets for sessions that don't have them yet.
     const missingSessions = metas.filter(
       (m) => !fs.existsSync(path.join(workspaceRoot, FACETS_DIR, `${m.session_id}.json`)),
     );
@@ -102,7 +130,7 @@ async function handleChatRequest(
       );
     }
 
-    // Step 3: Load aggregated insights and render summary
+    // Step 3: Load aggregated insights and render summary.
     const insights = loadInsights(workspaceRoot);
     stream.markdown(buildSummary(insights));
     stream.anchor(
@@ -135,6 +163,21 @@ async function handleChatRequest(
     }
   }
   return {};
+}
+
+/**
+ * Attempt to load session metas without throwing.
+ * Returns null when InsightsNotFoundError is raised (i.e. no session-meta files yet).
+ */
+function tryLoadSessionMetas(workspaceRoot: string) {
+  try {
+    return loadSessionMetas(workspaceRoot);
+  } catch (err) {
+    if (err instanceof InsightsNotFoundError) {
+      return null;
+    }
+    throw err;
+  }
 }
 
 export function deactivate(): void {}
