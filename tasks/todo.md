@@ -249,6 +249,36 @@
 
 ---
 
+---
+
+## フェーズ12: Node.js セットアップ & 拡張機能ビルド
+
+- [ ] [NODE-001] Node.js LTS（v22 以上）をインストール ※ユーザー作業
+  - 完了基準: `node --version` で v22.x.x 以上が表示される
+  - 手順: https://nodejs.org から LTS 版をダウンロード → インストーラー実行 → VS Code 再起動
+
+- [x] [NODE-002] `extension/.nvmrc` を追加（Node 22 を固定）
+  - 完了基準: `extension/.nvmrc` に `22` が記載されている
+
+- [x] [NODE-003] `extension/package.json` に `engines.node` フィールドを追加
+  - 完了基準: `"node": ">=22.0.0"` が engines に含まれている
+
+- [x] [NODE-004] README.md にセットアップ手順 Step 0（Node.js インストール）を追記
+  - 完了基準: 動作要件テーブルに Node.js 行が追加され、セットアップ手順に Step 0 が存在する
+
+- [ ] [NODE-005] `npm install` を実行して依存関係をインストール ※ユーザー作業
+  - 完了基準: `extension/node_modules/` が生成される
+  - 手順: VS Code ターミナルで `cd extension && npm install`
+
+- [ ] [NODE-006] `npm run compile` を実行してビルド ※ユーザー作業
+  - 完了基準: `extension/out/extension.js` が生成される
+  - 手順: `npm run compile`
+
+- [ ] [NODE-007] F5 で Extension Development Host を起動し `@insights` を確認 ※ユーザー作業
+  - 完了基準: 新しい VS Code ウィンドウの Copilot Chat で `@insights /summary` が応答する
+
+---
+
 ## 進捗サマリー
 
 | フェーズ | 完了 | 総数 |

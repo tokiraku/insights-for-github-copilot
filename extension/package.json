@@ -4,7 +4,8 @@
   "description": "Analyze your GitHub Copilot Chat sessions and surface usage insights directly in VS Code.",
   "version": "0.1.0",
   "engines": {
-    "vscode": "^1.90.0"
+    "vscode": "^1.90.0",
+    "node": ">=22.0.0"
   },
   "categories": ["AI"],
   "main": "./out/extension.js",
@@ -41,7 +42,7 @@
     "watch": "tsc --watch -p ./"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
+    "@types/node": "^22.0.0",
     "@types/vscode": "^1.90.0",
     "typescript": "^5.4.0"
   }

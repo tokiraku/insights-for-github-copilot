@@ -12,6 +12,7 @@ GitHub Copilot Chat のセッション履歴を分析し、利用傾向・改善
 | 項目 | バージョン |
 |------|-----------|
 | Python | 3.11 以上 |
+| Node.js | 22.0.0 以上 |
 | VS Code | 1.90.0 以上 |
 | GitHub Copilot Chat | 有効化済み |
 
@@ -20,6 +21,17 @@ GitHub Copilot Chat のセッション履歴を分析し、利用傾向・改善
 ---
 
 ## セットアップ
+
+### 0. Node.js のインストール（初回のみ）
+
+[Node.js 公式サイト](https://nodejs.org) から **LTS 版（v20 以上）** をダウンロードしてインストールしてください。
+
+インストール後、ターミナルで確認：
+
+```bash
+node --version   # v20.x.x 以上と表示されれば OK
+npm --version
+```
 
 ### 1. CLI ツールのインストール
 
