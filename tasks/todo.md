@@ -301,7 +301,7 @@
     - `creationDate` が数値（Unix ms）と ISO 8601 文字列の両方に対応できる
     - 不正な JSON 行をスキップして処理を継続できる
 
-- [ ] [TS-003] `extension/src/sessionExtractor.ts` を新規作成（SessionMeta 算出）
+- [x] [TS-003] `extension/src/sessionExtractor.ts` を新規作成（SessionMeta 算出）
   - 優先度: Must Have
   - 完了基準:
     - `ParsedSession` から `SessionMeta` の全フィールドを算出できる
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 2 | 6 |
-| **合計** | **40** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 3 | 6 |
+| **合計** | **41** | **52** |
