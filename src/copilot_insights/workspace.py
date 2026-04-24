@@ -98,36 +98,69 @@ def _normalize_path(p: str | Path) -> str:
     return str(Path(s).resolve()).lower()
 
 
-def find_workspace_id(workspace_path: Path | None) -> str | None:
-    """Find the VS Code workspaceStorage ID for the given workspace path.
+def _read_workspace_json_folder(candidate_dir: Path) -> str | None:
+    """Return the folder path stored in workspace.json, or None if absent.
 
-    Searches each subdirectory of workspaceStorage for a state.vscdb whose
-    stored paths match *workspace_path*.  Returns the matching ID string, or
-    None if no match is found.
+    VS Code writes a ``workspace.json`` file containing a ``folder`` key
+    (``file://`` URI) that identifies the workspace root.  This is the
+    most reliable source for workspace path resolution.
+    """
+    wj = candidate_dir / "workspace.json"
+    if not wj.exists():
+        return None
+    try:
+        data = json.loads(wj.read_text(encoding="utf-8"))
+        folder = data.get("folder")
+        if isinstance(folder, str):
+            return folder
+    except (json.JSONDecodeError, OSError):
+        pass
+    return None
+
+
+def find_workspace_ids(workspace_path: Path | None) -> list[str]:
+    """Find all VS Code workspaceStorage IDs for the given workspace path.
+
+    Searches each subdirectory for a ``workspace.json`` whose ``folder`` URI
+    matches *workspace_path*.  Returns all matching IDs (a workspace can have
+    multiple storage entries if it was opened multiple times).
 
     Args:
         workspace_path: Absolute path to the workspace root.  If None the
-            function returns None immediately.
+            function returns an empty list immediately.
     """
     if workspace_path is None:
-        return None
+        return []
 
     target = _normalize_path(workspace_path)
     storage_root = get_workspace_storage_root()
 
     if not storage_root.is_dir():
-        return None
+        return []
 
+    matched: list[str] = []
     for candidate_dir in storage_root.iterdir():
         if not candidate_dir.is_dir():
             continue
-        db_path = candidate_dir / "state.vscdb"
-        folder_paths = _extract_folder_paths_from_vscdb(db_path)
-        for fp in folder_paths:
-            if _normalize_path(fp) == target or fp == target:
-                return candidate_dir.name
+        folder = _read_workspace_json_folder(candidate_dir)
+        if folder and _normalize_path(_uri_to_path(folder)) == target:
+            matched.append(candidate_dir.name)
 
-    return None
+    return matched
+
+
+def find_workspace_id(workspace_path: Path | None) -> str | None:
+    """Find the VS Code workspaceStorage ID for the given workspace path.
+
+    Returns the first matching ID, or None if no match is found.
+    Prefer :func:`find_workspace_ids` when multiple matches are possible.
+
+    Args:
+        workspace_path: Absolute path to the workspace root.  If None the
+            function returns None immediately.
+    """
+    ids = find_workspace_ids(workspace_path)
+    return ids[0] if ids else None
 
 
 def get_workspace_ids() -> list[str]:
@@ -203,20 +236,20 @@ def list_jsonl_files_with_ids(workspace_ids: list[str]) -> list[tuple[str, Path]
 def resolve_workspace_ids(workspace_path: Path | None) -> list[str]:
     """Return the list of workspace IDs to scan for chat sessions.
 
-    When *workspace_path* is provided and a matching ID is found, returns a
-    single-element list containing that ID.  Otherwise falls back to all
-    workspace IDs recognized by ``get_workspace_ids()``, including those that
-    contain a ``chatSessions`` directory or at least a ``state.vscdb`` file.
+    When *workspace_path* is provided and matching IDs are found via
+    ``workspace.json``, returns those IDs (a workspace may have multiple
+    storage entries).  Otherwise falls back to all workspace IDs recognized by
+    ``get_workspace_ids()``.
 
     Args:
         workspace_path: Absolute path to the current workspace root, or None.
 
     Returns:
-        Ordered list of workspace ID strings.  The matched workspace (if any)
-        is always first.
+        Ordered list of workspace ID strings.  Matched workspaces (if any)
+        are always first.
     """
-    matched_id = find_workspace_id(workspace_path)
-    if matched_id is not None:
-        return [matched_id]
+    matched_ids = find_workspace_ids(workspace_path)
+    if matched_ids:
+        return matched_ids
 
     return get_workspace_ids()

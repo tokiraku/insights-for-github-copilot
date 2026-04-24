@@ -34,10 +34,18 @@
       "Bash(python -m ruff check src/copilot_insights/)",
       "Bash(python -m ruff check src/ tests/)",
       "Bash(python -m ruff check src/ tests/test_pipeline.py --fix)",
-      "Bash(python -m ruff check src/ tests/test_pipeline.py)"
+      "Bash(python -m ruff check src/ tests/test_pipeline.py)",
+      "Bash(npm install *)",
+      "PowerShell($env:Path = [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"Path\",\"User\"\\); cd \"c:\\\\Users\\\\redcr\\\\OneDrive\\\\ドキュメント\\\\github\\\\insights-for-github-copilot\\\\extension\"; node --version; npm --version)",
+      "PowerShell(Get-Command node -ErrorAction SilentlyContinue; Get-ChildItem \"C:\\\\Program Files\\\\nodejs\" -ErrorAction SilentlyContinue | Select-Object -First 3; Get-ChildItem \"$env:APPDATA\\\\npm\" -ErrorAction SilentlyContinue | Select-Object -First 3)",
+      "PowerShell(code --version 2>&1)",
+      "Bash(python -m copilot_insights)",
+      "Bash(python -m copilot_insights --workspace \"c:\\\\Users\\\\redcr\\\\OneDrive\\\\ドキュメント\\\\github\\\\tokigawa-dashboard\")",
+      "Bash(python -c ' *)"
     ],
     "additionalDirectories": [
-      "extension"
+      "extension",
+      "c:\\Users\\redcr\\OneDrive\\ドキュメント\\github\\insights-for-github-copilot"
     ]
   },
   "enabledMcpjsonServers": [
