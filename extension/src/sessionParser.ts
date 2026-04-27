@@ -165,6 +165,23 @@ function arraysEqual(a: unknown[], b: unknown[]): boolean {
 }
 
 /**
+ * Normalize a request timestamp to Unix ms.
+ * Handles numeric ms and ISO 8601 strings; returns 0 on failure.
+ */
+function normalizeTimestamp(raw: unknown): number {
+  if (typeof raw === "number" && isFinite(raw)) {
+    return raw;
+  }
+  if (typeof raw === "string" && raw.trim().length > 0) {
+    const ms = Date.parse(raw);
+    if (!isNaN(ms)) {
+      return ms;
+    }
+  }
+  return 0;
+}
+
+/**
  * Normalize a creationDate value to an ISO 8601 string.
  * VS Code stores it as either a Unix timestamp in milliseconds (number) or an ISO 8601 string.
  */
@@ -214,7 +231,7 @@ function buildRequest(raw: RawRequest): ParsedRequest {
 
   return {
     requestId: typeof raw.requestId === "string" ? raw.requestId : "",
-    timestamp: typeof ts === "number" ? ts : 0,
+    timestamp: normalizeTimestamp(ts),
     modelId: typeof raw.modelId === "string" ? raw.modelId : "",
     messageText,
     responseText: extractMarkdownText(response),

@@ -76,11 +76,15 @@ export async function generateSessionMetas(
 
     // Skip sessions whose meta file is newer than the source jsonl (incremental update).
     if (fs.existsSync(outputPath)) {
-      const jsonlMtime = fs.statSync(filePath).mtimeMs;
-      const metaMtime = fs.statSync(outputPath).mtimeMs;
-      if (jsonlMtime <= metaMtime) {
-        onProgress?.(i + 1, total);
-        continue;
+      try {
+        const jsonlMtime = fs.statSync(filePath).mtimeMs;
+        const metaMtime = fs.statSync(outputPath).mtimeMs;
+        if (jsonlMtime <= metaMtime) {
+          onProgress?.(i + 1, total);
+          continue;
+        }
+      } catch {
+        // stat failed (race condition or permission error) — regenerate this session.
       }
     }
 

@@ -156,8 +156,10 @@ export function listChatSessionFiles(
 
 /**
  * Normalizes a filesystem path for cross-platform comparison.
- * On Windows, drives letters are lower-cased and all separators are unified.
+ * Path separators are unified on all platforms, and case-folding is applied
+ * only on Windows where filesystem comparisons are typically case-insensitive.
  */
 function normalizeFsPath(fsPath: string): string {
-  return path.normalize(fsPath).toLowerCase();
+  const normalized = path.normalize(fsPath);
+  return process.platform === "win32" ? normalized.toLowerCase() : normalized;
 }

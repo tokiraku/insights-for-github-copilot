@@ -5,6 +5,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 
 import { InsightsNotFoundError, loadInsights, loadSessionMetas } from "./dataLoader.js";
+import { SessionMeta } from "./models.js";
 import { FacetsGenerationError, generateAllFacets } from "./facetsGenerator.js";
 import { buildSummary } from "./markdownSummary.js";
 import { ReportPanel } from "./reportPanel.js";
@@ -169,7 +170,7 @@ async function handleChatRequest(
  * Attempt to load session metas without throwing.
  * Returns null when InsightsNotFoundError is raised (i.e. no session-meta files yet).
  */
-function tryLoadSessionMetas(workspaceRoot: string) {
+function tryLoadSessionMetas(workspaceRoot: string): SessionMeta[] | null {
   try {
     return loadSessionMetas(workspaceRoot);
   } catch (err) {

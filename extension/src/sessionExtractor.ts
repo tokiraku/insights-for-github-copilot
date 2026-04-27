@@ -105,12 +105,25 @@ export function extractSessionMeta(session: ParsedSession): SessionMeta {
 
 type ToolInvocation = Record<string, unknown>;
 
-/** Parse a request timestamp (Unix ms number) to a Date, or null on failure. */
-function parseTimestampMs(ts: number): Date | null {
-  if (!isFinite(ts) || ts === 0) {
-    return null;
+/** Parse a request timestamp (Unix ms number or ISO 8601 string) to a Date, or null on failure. */
+function parseTimestampMs(ts: unknown): Date | null {
+  if (typeof ts === "number") {
+    if (!isFinite(ts) || ts === 0) {
+      return null;
+    }
+    return new Date(ts);
   }
-  return new Date(ts);
+
+  if (typeof ts === "string") {
+    const trimmed = ts.trim();
+    if (trimmed.length === 0) {
+      return null;
+    }
+    const parsed = new Date(trimmed);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  return null;
 }
 
 /** Collect all parsed toolInvocationSerialized objects across all requests. */
@@ -121,10 +134,7 @@ function extractToolInvocations(requests: ParsedRequest[]): ToolInvocation[] {
       if (chunk.kind !== "toolInvocationSerialized") {
         continue;
       }
-      // toolInvocationSerialized chunks store structured data directly in the chunk object,
-      // not as a JSON-encoded string in the value field.
-      // The value field typically contains display text; the actual tool data is in the chunk itself.
-      // We treat the chunk as the invocation record.
+      // toolInvocationSerialized chunks store the tool invocation as a JSON-encoded string in chunk.value.
       if (chunk.value) {
         try {
           const data = JSON.parse(chunk.value) as unknown;
