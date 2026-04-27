@@ -7,7 +7,9 @@
     "vscode": "^1.90.0",
     "node": ">=22.0.0"
   },
-  "categories": ["AI"],
+  "categories": [
+    "AI"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "chatParticipants": [
@@ -39,11 +41,13 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc --watch -p ./"
+    "watch": "tsc --watch -p ./",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/vscode": "^1.90.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.5"
   }
 }

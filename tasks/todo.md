@@ -284,7 +284,7 @@
 > **目的**: 拡張機能単体で `.copilot-insights/session-meta/` を生成できるようにする。
 > Python CLI を事前実行しなくても `@insights /summary` が動くようにする。
 
-- [ ] [TS-001] `extension/src/sessionScanner.ts` を新規作成（workspaceStorage パス解決・.jsonl 列挙）
+- [x] [TS-001] `extension/src/sessionScanner.ts` を新規作成（workspaceStorage パス解決・.jsonl 列挙）
   - 優先度: Must Have
   - 完了基準:
     - `process.env.APPDATA` から `workspaceStorage` ルートを取得できる
@@ -292,7 +292,7 @@
     - 対象 workspace の `chatSessions/*.jsonl` ファイル一覧を返せる
     - 30日フィルタ・最大50件の制限を適用できる
 
-- [ ] [TS-002] `extension/src/sessionParser.ts` を新規作成（.jsonl パーサー）
+- [x] [TS-002] `extension/src/sessionParser.ts` を新規作成（.jsonl パーサー）
   - 優先度: Must Have
   - 完了基準:
     - `kind=0` からセッション ID・`creationDate`・モデル名を抽出できる
@@ -301,7 +301,7 @@
     - `creationDate` が数値（Unix ms）と ISO 8601 文字列の両方に対応できる
     - 不正な JSON 行をスキップして処理を継続できる
 
-- [ ] [TS-003] `extension/src/sessionExtractor.ts` を新規作成（SessionMeta 算出）
+- [x] [TS-003] `extension/src/sessionExtractor.ts` を新規作成（SessionMeta 算出）
   - 優先度: Must Have
   - 完了基準:
     - `ParsedSession` から `SessionMeta` の全フィールドを算出できる
@@ -309,21 +309,21 @@
     - `tool_counts` / `languages` / `lines_added` / `lines_removed` / `files_modified` / `tool_errors` が正しく算出される
     - トークン数はテキスト長 ÷ 4 の推定式で算出される
 
-- [ ] [TS-004] `extension/src/sessionMetaGenerator.ts` を新規作成（パイプライン統合）
+- [x] [TS-004] `extension/src/sessionMetaGenerator.ts` を新規作成（パイプライン統合）
   - 優先度: Must Have
   - 完了基準:
     - `generateSessionMetas(workspaceRoot)` を呼ぶと `.copilot-insights/session-meta/` に JSON が書き出される
     - 既存の session-meta は上書きせずスキップできる（差分更新）
     - 進捗コールバック `(current, total) => void` を受け取り呼び出せる
 
-- [ ] [TS-005] `extension/src/extension.ts` を修正（`InsightsNotFoundError` 時に自動生成）
+- [x] [TS-005] `extension/src/extension.ts` を修正（`InsightsNotFoundError` 時に自動生成）
   - 優先度: Must Have
   - 完了基準:
     - `@insights /summary` 実行時に session-meta が存在しない場合、`generateSessionMetas()` を自動実行してからサマリーを返す
     - 生成中は `stream.progress()` で進捗を表示する
     - 生成失敗時はわかりやすいエラーメッセージを表示する
 
-- [ ] [TS-test] sessionParser / sessionExtractor のユニットテスト
+- [x] [TS-test] sessionParser / sessionExtractor のユニットテスト
   - 優先度: Must Have
   - 完了基準:
     - サンプル JSONL 文字列を使ってパーサーが正しく `ParsedSession` を返すことをテストが証明する
@@ -347,5 +347,5 @@
 | フェーズ10: Python CLI — Anthropic 依存の削除 | 3 | 3 |
 | フェーズ11: テスト修正・ドキュメント更新 | 2 | 2 |
 | フェーズ12: Node.js セットアップ & 拡張機能ビルド | 6 | 7 |
-| フェーズ13: TypeScript session-meta 生成 | 0 | 6 |
-| **合計** | **38** | **52** |
+| フェーズ13: TypeScript session-meta 生成 | 6 | 6 |
+| **合計** | **44** | **52** |
